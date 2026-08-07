@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beawar District Election Training Attendance Portal</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS for Excel Reading and Writing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- HTML5 QR Code Scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <!-- SweetAlert2 for notifications -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Chart.js for analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rjGov: {
+                            navy: '#0f172a',
+                            saffron: '#d97706',
+                            green: '#059669',
+                            gold: '#b45309',
+                            cardBg: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; }
+        .glass-panel { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .badge-present { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+        .badge-absent { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+        .badge-pending { background-color: #fef3c7; color: #b45309; border: 1px solid #fde047; }
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white; color: black; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- LOGIN SCREEN -->
+    <div id="loginScreen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-95 p-4">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700">
+            <div class="bg-gradient-to-r from-slate-900 via-amber-900 to-slate-900 p-6 text-center text-white relative">
+                <div class="w-20 h-20 mx-auto mb-3 bg-amber-500 rounded-full flex items-center justify-center text-3xl font-bold border-4 border-white shadow-lg">
+                    🏛️
+                </div>
+                <h2 class="text-xl font-extrabold font-heading text-amber-400 uppercase tracking-wider">Election Department</h2>
+                <p class="text-sm font-medium text-slate-200 mt-1">District Beawar, Rajasthan</p>
+                <p class="text-xs text-amber-200 mt-0.5">Nagar Palika & Panchayat Election Training</p>
+            </div>
+            
+            <form id="loginForm" onsubmit="handleLogin(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Role / पद चुनें</label>
+                    <select id="loginRole" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm font-semibold">
+                        <option value="admin">District Nodal Officer (Admin / नोडल अधिकारी)</option>
+                        <option value="trainer">Master Trainer (मास्टर ट्रेनर)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username / यूजरनेम</label>
+                    <input type="text" id="loginUser" value="admin" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Passcode / पासवर्ड</label>
+                    <input type="password" id="loginPass" value="beawar2026" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow-md flex items-center justify-center space-x-2">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>LOGIN TO PORTAL / लॉगिन करें</span>
+                </button>
+
+                <div class="pt-3 border-t border-slate-200 text-center">
+                    <p class="text-xs text-slate-500 font-semibold mb-2">Quick Demo Access / त्वरित लॉगिन:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <button type="button" onclick="quickLogin('admin')" class="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border font-medium">Nodal Officer</button>
+                        <button type="button" onclick="quickLogin('trainer')" class="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border font-medium">Master Trainer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP NAVIGATION -->
+    <header class="bg-slate-900 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-12 h-12 bg-amber-500 text-slate-900 rounded-lg flex items-center justify-center font-black text-2xl shadow-inner border border-amber-300">
+                    🗳️
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold font-heading text-amber-400 leading-tight">BEAWAR DISTRICT ELECTION PORTAL</h1>
+                    <p class="text-xs text-slate-300">Nagar Palika & Panchayat Election Training Attendance | District Beawar (Raj.)</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3 text-xs">
+                <div class="hidden sm:flex flex-col text-right">
+                    <span id="liveClock" class="font-bold text-amber-300">--:--:--</span>
+                    <span id="liveDate" class="text-slate-400">Loading...</span>
+                </div>
+                <div class="h-8 w-px bg-slate-700 hidden sm:block"></div>
+                <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="activeUserBadge" class="font-semibold text-slate-200">Admin</span>
+                </div>
+                <button onclick="handleLogout()" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg transition">
+                    <i class="fas fa-power-off"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABS NAV -->
+        <div class="bg-slate-800 border-t border-slate-700 overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 flex space-x-1">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-amber-400 text-amber-400">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>DASHBOARD</span>
+                </button>
+                <button onclick="switchTab('attendance')" id="tab-attendance" class="tab-btn py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+                    <i class="fas fa-user-check"></i>
+                    <span>MARK ATTENDANCE</span>
+                </button>
+                <button onclick="switchTab('excel')" id="tab-excel" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+                    <i class="fas fa-file-excel"></i>
+                    <span>EXCEL DATABASE</span>
+                </button>
+                <button onclick="switchTab('cloud')" id="tab-cloud" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+                    <i class="fas fa-cloud"></i>
+                    <span>CLOUD SYNC</span>
+                </button>
+                <button onclick="switchTab('staff')" id="tab-staff" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+                    <i class="fas fa-users-cog text-amber-400"></i>
+                    <span>MANAGE STAFF LOGINS</span>
+                </button>
+                <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+                    <i class="fas fa-file-invoice"></i>
+                    <span>DEO REPORTS</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 space-y-6">
+
+        <!-- 1. DASHBOARD VIEW -->
+        <section id="view-dashboard" class="space-y-6">
+            <!-- SUMMARY STAT CARDS -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-blue-600 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 uppercase">Total Employees / कुल कर्मचारी</p>
+                            <h3 id="statTotal" class="text-2xl font-black font-heading text-slate-800 mt-1">0</h3>
+                        </div>
+                        <div class="p-2 bg-blue-100 text-blue-600 rounded-lg"><i class="fas fa-users text-lg"></i></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-emerald-600 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 uppercase">Present / उपस्थित</p>
+                            <h3 id="statPresent" class="text-2xl font-black font-heading text-emerald-600 mt-1">0</h3>
+                        </div>
+                        <div class="p-2 bg-emerald-100 text-emerald-600 rounded-lg"><i class="fas fa-user-check text-lg"></i></div>
+                    </div>
+                    <p id="statPresentPct" class="text-xs font-semibold text-emerald-600 mt-2">0% Rate</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-rose-600 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 uppercase">Absent / अनुपस्थित</p>
+                            <h3 id="statAbsent" class="text-2xl font-black font-heading text-rose-600 mt-1">0</h3>
+                        </div>
+                        <div class="p-2 bg-rose-100 text-rose-600 rounded-lg"><i class="fas fa-user-times text-lg"></i></div>
+                    </div>
+                    <p id="statAbsentPct" class="text-xs font-semibold text-rose-600 mt-2">0% Rate</p>
+                </div>
+
+                <div class="glass-panel p-4 rounded-xl border-l-4 border-amber-500 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-bold text-slate-500 uppercase">Pending / शेष</p>
+                            <h3 id="statPending" class="text-2xl font-black font-heading text-amber-600 mt-1">0</h3>
+                        </div>
+                        <div class="p-2 bg-amber-100 text-amber-600 rounded-lg"><i class="fas fa-clock text-lg"></i></div>
+                    </div>
+                    <p id="statPendingPct" class="text-xs font-semibold text-amber-600 mt-2">0% Remaining</p>
+                </div>
+            </div>
+
+            <!-- ANALYTICS GRID -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Tehsil Breakdown -->
+                <div class="glass-panel p-5 rounded-xl shadow-sm">
+                    <h3 class="text-sm font-bold text-slate-800 uppercase flex items-center justify-between mb-4">
+                        <span><i class="fas fa-map-marker-alt text-amber-600 mr-2"></i>Tehsil-Wise Training Status (Beawar District)</span>
+                        <span class="text-xs text-slate-500 font-normal">7 Tehsils</span>
+                    </h3>
+                    <div id="tehsilProgressList" class="space-y-3">
+                        <!-- Dynamic list -->
+                    </div>
+                </div>
+
+                <!-- Absent Reasons Breakdown -->
+                <div class="glass-panel p-5 rounded-xl shadow-sm flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-800 uppercase mb-4">
+                            <i class="fas fa-exclamation-triangle text-rose-600 mr-2"></i>Absentee Reasons Analysis (कारण विश्लेषण)
+                        </h3>
+                        <div class="h-64 relative">
+                            <canvas id="reasonsChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="reasonsLegend" class="grid grid-cols-2 gap-2 mt-4 text-xs">
+                        <!-- Legend pills -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. MARK ATTENDANCE VIEW -->
+        <section id="view-attendance" class="hidden space-y-4">
+            <!-- SEARCH AND FILTERS BAR -->
+            <div class="glass-panel p-4 rounded-xl shadow-sm space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Search Employee / नाम, ID, मोबाइल से खोजें</label>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-slate-400 text-xs"></i>
+                            <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Enter Emp ID, Name, Mobile, Designation..." class="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Filter Tehsil / तहसील</label>
+                        <select id="filterTehsil" onchange="applyFilters()" class="w-full py-2 px-3 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500">
+                            <option value="">All Tehsils (सभी तहसीलें)</option>
+                            <option value="Beawar">Beawar (ब्यावर)</option>
+                            <option value="Jaitaran">Jaitaran (जैतारण)</option>
+                            <option value="Masuda">Masuda (मसूदा)</option>
+                            <option value="Todgarh">Todgarh (टॉडगढ़)</option>
+                            <option value="Raipur">Raipur (रायपुर)</option>
+                            <option value="Badnor">Badnor (बदनोर)</option>
+                            <option value="Vijaynagar">Vijaynagar (विजयनगर)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Filter Department / विभाग</label>
+                        <select id="filterDept" onchange="applyFilters()" class="w-full py-2 px-3 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500">
+                            <option value="">All Departments (सभी विभाग)</option>
+                            <option value="School Education">School Education (शिक्षा विभाग)</option>
+                            <option value="Revenue Department">Revenue Department (राजस्व)</option>
+                            <option value="Panchayati Raj">Panchayati Raj (पंचायती राज)</option>
+                            <option value="Agriculture Department">Agriculture (कृषि)</option>
+                            <option value="Medical & Health">Medical & Health (चिकित्सा)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Status / स्थिति</label>
+                        <select id="filterStatus" onchange="applyFilters()" class="w-full py-2 px-3 bg-white border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-amber-500">
+                            <option value="">All Status (सभी)</option>
+                            <option value="Pending">Pending (शेष)</option>
+                            <option value="Present">Present (उपस्थित)</option>
+                            <option value="Absent">Absent (अनुपस्थित)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 text-xs">
+                    <span id="filterCount" class="font-bold text-slate-600">Showing 0 employees</span>
+                    <div class="flex space-x-2">
+                        <button onclick="markFilteredPresent()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold transition">
+                            <i class="fas fa-check-double mr-1"></i>Mark All Filtered Present
+                        </button>
+                        <button onclick="resetFilters()" class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded font-semibold transition">
+                            <i class="fas fa-undo mr-1"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABLE CONTAINER -->
+            <div class="glass-panel rounded-xl shadow-sm overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-900 text-slate-200 uppercase font-bold text-[11px]">
+                            <tr>
+                                <th class="p-3">Emp ID / ID</th>
+                                <th class="p-3">Employee Name & Post</th>
+                                <th class="p-3">Department & Office</th>
+                                <th class="p-3">Tehsil</th>
+                                <th class="p-3">Duty & Batch</th>
+                                <th class="p-3">Status / स्थिति</th>
+                                <th class="p-3 text-center">Action / उपस्थिति मार्क करें</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="divide-y divide-slate-200 bg-white">
+                            <!-- Rows loaded dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. EXCEL DATABASE VIEW -->
+        <section id="view-excel" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-sm space-y-6">
+                <div class="border-b pb-4">
+                    <h3 class="text-base font-bold text-slate-800 uppercase flex items-center space-x-2">
+                        <i class="fas fa-file-excel text-emerald-600"></i>
+                        <span>Import / Manage Employee Database Excel File</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Upload your Excel sheet (.xlsx, .xls, .csv) containing employee details for Beawar District.</p>
+                </div>
+
+                <!-- DRAG AND DROP ZONE -->
+                <div id="dropZone" onclick="document.getElementById('excelFileInput').click()" class="border-2 border-dashed border-emerald-400 bg-emerald-50/50 hover:bg-emerald-100/50 transition p-8 rounded-xl text-center cursor-pointer space-y-3">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-emerald-600"></i>
+                    <h4 class="text-sm font-bold text-slate-800">Click to Select Excel File or Drag & Drop Here</h4>
+                    <p class="text-xs text-slate-500">Supports .XLSX, .XLS, .CSV files containing employee lists</p>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" onchange="handleExcelUpload(event)" class="hidden">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-xs">
+                    <button onclick="loadSampleBeawarData()" class="p-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold flex items-center justify-center space-x-2 transition shadow">
+                        <i class="fas fa-database text-amber-400"></i>
+                        <span>Load Sample Database</span>
+                    </button>
+
+                    <button onclick="downloadSampleTemplate()" class="p-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold flex items-center justify-center space-x-2 border transition">
+                        <i class="fas fa-download text-blue-600"></i>
+                        <span>Download Column Template</span>
+                    </button>
+
+                    <button onclick="exportCurrentDatabase()" class="p-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl font-bold flex items-center justify-center space-x-2 transition shadow">
+                        <i class="fas fa-file-export"></i>
+                        <span>Export Database (.XLSX)</span>
+                    </button>
+
+                    <button onclick="clearDatabase()" class="p-4 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl font-bold flex items-center justify-center space-x-2 border border-rose-300 transition">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Clear All Current Data</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. CLOUD SYNC VIEW -->
+        <section id="view-cloud" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-sm space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-slate-800 uppercase flex items-center space-x-2">
+                        <i class="fas fa-cloud text-blue-600"></i>
+                        <span>Google Sheets & Firebase Cloud Synchronization</span>
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Connect your online Google Sheet or Firebase Database for multi-user attendance tracking.</p>
+                </div>
+
+                <div class="space-y-4 max-w-2xl">
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-blue-900 uppercase">Google Sheet Webhook URL (Google Apps Script)</label>
+                        <input type="url" id="googleSheetUrl" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="w-full px-3 py-2 border rounded-lg text-xs font-mono">
+                        <p class="text-[11px] text-blue-700">Paste your deployed Google Apps Script URL here. All attendance marks will be pushed to Google Sheets in real-time.</p>
+                    </div>
+
+                    <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                        <label class="block text-xs font-bold text-slate-800 uppercase">Firebase Realtime DB URL (Optional)</label>
+                        <input type="url" id="firebaseDbUrl" placeholder="https://beawar-election-default-rtdb.firebaseio.com/attendance" class="w-full px-3 py-2 border rounded-lg text-xs font-mono">
+                    </div>
+
+                    <div class="flex space-x-3">
+                        <button onclick="saveCloudSettings()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow">
+                            Save Cloud Settings
+                        </button>
+                        <button onclick="syncAllToCloud()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow flex items-center space-x-1">
+                            <i class="fas fa-sync-alt"></i>
+                            <span>Sync All Local Data Now</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. DEO REPORTS VIEW -->
+        <section id="view-reports" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-sm space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 uppercase">District Election Officer (DEO) Official Report</h3>
+                        <p class="text-xs text-slate-500">District Beawar, Rajasthan - Training Attendance Report</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="window.print()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow">
+                            <i class="fas fa-print mr-1"></i>Print PDF Report
+                        </button>
+                        <button onclick="exportCurrentDatabase()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold shadow">
+                            <i class="fas fa-file-excel mr-1"></i>Export Excel Report
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-slate-300 shadow-inner space-y-6 print:border-none">
+                    <div class="text-center space-y-1 border-b pb-4">
+                        <h2 class="text-lg font-black font-heading text-slate-900 uppercase">कार्यालय जिला निर्वाचन अधिकारी एवं जिला मजिस्ट्रेट, ब्यावर (राज.)</h2>
+                        <p class="text-xs font-bold text-slate-700">नगर पालिका एवं पंचायती राज आम चुनाव - 2026</p>
+                        <p class="text-xs text-slate-600">प्रथम/द्वितीय चुनाव प्रशिक्षण उपस्थिति एवं अनुपस्थिति विवरण पत्र</p>
+                    </div>
+
+                    <!-- REPORT SUMMARY TABLE -->
+                    <div class="grid grid-cols-4 gap-2 text-center text-xs">
+                        <div class="p-3 bg-slate-100 rounded border"><span class="block text-slate-500 font-bold">कुल आवंटित:</span><b id="reportTotal" class="text-sm">0</b></div>
+                        <div class="p-3 bg-emerald-50 rounded border border-emerald-200"><span class="block text-emerald-700 font-bold">कुल उपस्थित:</span><b id="reportPresent" class="text-sm text-emerald-800">0</b></div>
+                        <div class="p-3 bg-rose-50 rounded border border-rose-200"><span class="block text-rose-700 font-bold">कुल अनुपस्थित:</span><b id="reportAbsent" class="text-sm text-rose-800">0</b></div>
+                        <div class="p-3 bg-amber-50 rounded border border-amber-200"><span class="block text-amber-700 font-bold">उपस्थिति प्रतिशत:</span><b id="reportPct" class="text-sm text-amber-800">0%</b></div>
+                    </div>
+
+                    <!-- ABSENTEE LIST FOR DEO -->
+                    <div>
+                        <h4 class="text-xs font-bold text-slate-800 uppercase mb-2">अनुपस्थित कार्मिकों की सूची एवं कारण (Absentee Staff List & Reasons):</h4>
+                        <table class="w-full text-left text-xs border border-slate-300 border-collapse">
+                            <thead class="bg-slate-200 text-slate-800 font-bold">
+                                <tr>
+                                    <th class="border p-2">क्र.सं.</th>
+                                    <th class="border p-2">कर्मचारी ID & नाम</th>
+                                    <th class="border p-2">पद व विभाग</th>
+                                    <th class="border p-2">तहसील</th>
+                                    <th class="border p-2">मोबाइल नं.</th>
+                                    <th class="border p-2">अनुपस्थिति का कारण</th>
+                                    <th class="border p-2">छूट पत्र/प्रमाण पत्र सं.</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportAbsenteeBody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. MANAGE STAFF LOGINS VIEW (ADMIN ONLY) -->
+        <section id="view-staff" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl shadow-sm space-y-6">
+                <div class="border-b pb-4 flex justify-between items-center flex-wrap gap-2">
+                    <div>
+                        <h3 class="text-base font-bold text-slate-800 uppercase flex items-center space-x-2">
+                            <i class="fas fa-users-cog text-amber-600"></i>
+                            <span>Staff / Master Trainer Credentials Manager</span>
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">Create and manage login accounts for staff/trainers capturing attendance in halls.</p>
+                    </div>
+                    <button onclick="openAddStaffModal()" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow flex items-center space-x-1 transition">
+                        <i class="fas fa-user-plus mr-1"></i>Create New Staff Login
+                    </button>
+                </div>
+
+                <div class="glass-panel rounded-xl shadow-sm overflow-hidden">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead class="bg-slate-900 text-slate-200 uppercase font-bold">
+                            <tr>
+                                <th class="p-3">Staff Full Name</th>
+                                <th class="p-3">Username</th>
+                                <th class="p-3">Assigned Tehsil / Hall</th>
+                                <th class="p-3">Passcode / Password</th>
+                                <th class="p-3">Role</th>
+                                <th class="p-3 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="staffTableBody" class="divide-y divide-slate-200 bg-white font-medium">
+                            <!-- Dynamic staff rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- CREATE / EDIT STAFF MODAL -->
+    <div id="staffModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-70 p-4 hidden">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-300">
+            <div class="bg-slate-900 text-amber-400 p-4 flex justify-between items-center border-b border-slate-800">
+                <h3 class="text-sm font-bold uppercase flex items-center">
+                    <i class="fas fa-user-plus mr-2"></i>Create Staff Login Credentials
+                </h3>
+                <button onclick="closeStaffModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+            </div>
+
+            <form onsubmit="submitStaffUser(event)" class="p-5 space-y-4 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Staff Full Name / पूरा नाम *</label>
+                    <input type="text" id="staffFullName" placeholder="e.g. Ramesh Chandra (Trainer Hall A)" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Assigned Tehsil / Training Hall *</label>
+                    <select id="staffTehsil" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold focus:ring-2 focus:ring-amber-500">
+                        <option value="All Tehsils">All Tehsils (District Level Admin/Staff)</option>
+                        <option value="Beawar">Beawar (ब्यावर)</option>
+                        <option value="Jaitaran">Jaitaran (जैतारण)</option>
+                        <option value="Masuda">Masuda (मसूदा)</option>
+                        <option value="Todgarh">Todgarh (टॉडगढ़)</option>
+                        <option value="Raipur">Raipur (रायपुर)</option>
+                        <option value="Badnor">Badnor (बदनोर)</option>
+                        <option value="Vijaynagar">Vijaynagar (विजयनगर)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Login Username / यूजरनेम *</label>
+                    <input type="text" id="staffUsername" placeholder="e.g. trainer_beawar" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Passcode / पासवर्ड *</label>
+                    <input type="password" id="staffPassword" placeholder="e.g. pass123" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t">
+                    <button type="button" onclick="closeStaffModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shadow">SAVE STAFF ACCOUNT</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ABSENTEE REASON MODAL -->
+    <div id="absentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-70 p-4 hidden">
+        <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-300">
+            <div class="bg-rose-700 text-white p-4 flex justify-between items-center">
+                <h3 class="text-sm font-bold uppercase flex items-center">
+                    <i class="fas fa-user-slash mr-2"></i>Mark Employee Absent / अनुपस्थित दर्ज करें
+                </h3>
+                <button onclick="closeAbsentModal()" class="text-white hover:text-rose-200 text-lg font-bold">&times;</button>
+            </div>
+
+            <form onsubmit="submitAbsentReason(event)" class="p-5 space-y-4 text-xs">
+                <input type="hidden" id="modalEmpId">
+                <div class="bg-slate-100 p-3 rounded-lg border border-slate-200">
+                    <p class="font-bold text-slate-800" id="modalEmpName">Emp Name</p>
+                    <p class="text-slate-600" id="modalEmpMeta">Emp ID & Dept</p>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Select Valid Reason for Absence / अनुपस्थिति का कारण चुनें *</label>
+                    <select id="modalReasonSelect" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg font-semibold focus:ring-2 focus:ring-rose-500">
+                        <option value="">-- Choose Reason --</option>
+                        <option value="Medical Emergency">Medical Emergency / चिकित्सीय अवकाश</option>
+                        <option value="DEO Approved Exemption">DEO Approved Election Exemption / जिला निर्वाचन अधिकारी द्वारा स्वीकृत छूट</option>
+                        <option value="Double Duty Order">Double Duty / Duplicate Order (दोहरी चुनाव ड्यूटी)</option>
+                        <option value="Out of District / Transferred">Out of District / Transferred / Retired (स्थानांतरित / सेवानिवृत्त)</option>
+                        <option value="Administrative Leave">Administrative / Official Leave (प्रशासनिक अवकाश)</option>
+                        <option value="Unauthorized Absence">Unauthorized Absence / अनाधिकृत अनुपस्थिति (DEO नोटिस हेतु)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Medical Certificate / Exemption Order No. (यदि लागू हो)</label>
+                    <input type="text" id="modalExemptionRef" placeholder="e.g. DEO/BWR/2026/Exempt-104" class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg">
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Remarks / टिप्पणी</label>
+                    <textarea id="modalRemarks" rows="2" placeholder="Add specific notes or trainer comments..." class="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-2 border-t">
+                    <button type="button" onclick="closeAbsentModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold shadow">SAVE ABSENCE RECORD</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT ENGINE -->
+    <script>
+        // APP STATE & STAFF CREDENTIALS
+        let currentUser = null;
+        let employees = [];
+        let staffUsers = [];
+        let html5QrScanner = null;
+        let reasonsChartInstance = null;
+
+        const DEFAULT_STAFF_ACCOUNTS = [
+            { name: "District Nodal Officer (Admin)", username: "admin", password: "beawar2026", role: "admin", assignedTehsil: "All Tehsils" },
+            { name: "Suresh Kumar (Trainer Beawar)", username: "trainer_beawar", password: "train123", role: "staff", assignedTehsil: "Beawar" },
+            { name: "Ramesh Chandra (Trainer Masuda)", username: "trainer_masuda", password: "train123", role: "staff", assignedTehsil: "Masuda" },
+            { name: "Mahendra Singh (Trainer Jaitaran)", username: "trainer_jaitaran", password: "train123", role: "staff", assignedTehsil: "Jaitaran" }
+        ];
+
+        // INIT APPLICATION
+        document.addEventListener("DOMContentLoaded", () => {
+            updateClock();
+            setInterval(updateClock, 1000);
+            loadLocalData();
+            loadStaffUsers();
+            initDragAndDrop();
+        });
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById("liveClock").innerText = now.toLocaleTimeString("en-IN");
+            document.getElementById("liveDate").innerText = now.toLocaleDateString("en-IN", { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function loadStaffUsers() {
+            const stored = localStorage.getItem("beawar_staff_credentials");
+            if (stored) {
+                try { staffUsers = JSON.parse(stored); } catch (e) { staffUsers = [...DEFAULT_STAFF_ACCOUNTS]; }
+            } else {
+                staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
+                saveStaffUsers();
+            }
+        }
+
+        function saveStaffUsers() {
+            localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+            renderStaffTable();
+        }
+
+        // AUTHENTICATION & ROLE MANAGEMENT
+        function handleLogin(e) {
+            e.preventDefault();
+            const uInput = document.getElementById("loginUser").value.trim().toLowerCase();
+            const pInput = document.getElementById("loginPass").value.trim();
+            const selectedRole = document.getElementById("loginRole").value;
+
+            const matchedUser = staffUsers.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+
+            if (!matchedUser) {
+                Swal.fire({ icon: 'error', title: 'Login Failed', text: 'Invalid Username or Passcode. Please check your credentials.' });
+                return;
+            }
+
+            currentUser = matchedUser;
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("activeUserBadge").innerText = `${currentUser.name} (${currentUser.role.toUpperCase()})`;
+
+            // Apply Role-Based Interface Control
+            if (currentUser.role === 'staff') {
+                document.querySelectorAll(".admin-only").forEach(el => el.classList.add("hidden"));
+                switchTab('attendance');
+                if (currentUser.assignedTehsil && currentUser.assignedTehsil !== 'All Tehsils') {
+                    document.getElementById("filterTehsil").value = currentUser.assignedTehsil;
+                }
+            } else {
+                document.querySelectorAll(".admin-only").forEach(el => el.classList.remove("hidden"));
+                switchTab('dashboard');
+            }
+
+            renderAllViews();
+            Swal.fire({ icon: 'success', title: 'Welcome!', text: `Logged in as ${currentUser.name}`, timer: 1500, showConfirmButton: false });
+        }
+
+        function quickLogin(role) {
+            document.getElementById("loginRole").value = role;
+            if (role === 'admin') {
+                document.getElementById("loginUser").value = 'admin';
+                document.getElementById("loginPass").value = 'beawar2026';
+            } else {
+                document.getElementById("loginUser").value = 'trainer_beawar';
+                document.getElementById("loginPass").value = 'train123';
+            }
+            handleLogin(new Event('submit'));
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById("loginScreen").classList.remove("hidden");
+        }
+
+        // STAFF LOGINS MANAGER (ADMIN ONLY)
+        function renderStaffTable() {
+            const tbody = document.getElementById("staffTableBody");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            staffUsers.forEach(u => {
+                const isRootAdmin = u.username === 'admin';
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-bold text-slate-800">${u.name}</td>
+                        <td class="p-3 font-mono text-amber-700 font-semibold">${u.username}</td>
+                        <td class="p-3"><span class="px-2 py-1 bg-slate-100 font-bold rounded">${u.assignedTehsil || 'All Tehsils'}</span></td>
+                        <td class="p-3 font-mono text-slate-600">${u.password}</td>
+                        <td class="p-3 font-bold text-[11px]">
+                            <span class="px-2.5 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.role.toUpperCase()}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                            ${isRootAdmin ? '<span class="text-slate-400 font-semibold">Master System Admin</span>' : `
+                                <button onclick="deleteStaffUser('${u.username}')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold transition">
+                                    <i class="fas fa-trash-alt mr-1"></i>Delete
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function openAddStaffModal() {
+            document.getElementById("staffFullName").value = "";
+            document.getElementById("staffUsername").value = "";
+            document.getElementById("staffPassword").value = "";
+            document.getElementById("staffTehsil").value = "Beawar";
+            document.getElementById("staffModal").classList.remove("hidden");
+        }
+
+        function closeStaffModal() {
+            document.getElementById("staffModal").classList.add("hidden");
+        }
+
+        function submitStaffUser(e) {
+            e.preventDefault();
+            const name = document.getElementById("staffFullName").value.trim();
+            const username = document.getElementById("staffUsername").value.trim().toLowerCase();
+            const password = document.getElementById("staffPassword").value.trim();
+            const assignedTehsil = document.getElementById("staffTehsil").value;
+
+            if (staffUsers.some(u => u.username.toLowerCase() === username)) {
+                Swal.fire({ icon: 'warning', title: 'Duplicate Username', text: `Username "${username}" already exists.` });
+                return;
+            }
+
+            staffUsers.push({ name, username, password, role: 'staff', assignedTehsil });
+            saveStaffUsers();
+            closeStaffModal();
+            Swal.fire({ icon: 'success', title: 'Staff Account Created!', text: `Login credentials generated for ${name}.` });
+        }
+
+        function deleteStaffUser(username) {
+            Swal.fire({
+                title: 'Delete Staff Credentials?',
+                text: `Are you sure you want to remove login access for "${username}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete',
+                confirmButtonColor: '#dc2626'
+            }).then(res => {
+                if (res.isConfirmed) {
+                    staffUsers = staffUsers.filter(u => u.username !== username);
+                    saveStaffUsers();
+                    Swal.fire({ icon: 'info', title: 'Deleted', text: 'Staff account removed.' });
+                }
+            });
+        }
+
+        // TAB SWITCHING
+        function switchTab(tabId) {
+            document.querySelectorAll("main > section").forEach(sec => sec.classList.add("hidden"));
+            document.getElementById(`view-${tabId}`).classList.remove("hidden");
+
+            document.querySelectorAll(".tab-btn").forEach(btn => {
+                btn.classList.remove("border-amber-400", "text-amber-400");
+                btn.classList.add("border-transparent", "text-slate-400");
+            });
+            const activeBtn = document.getElementById(`tab-${tabId}`);
+            if (activeBtn) {
+                activeBtn.classList.add("border-amber-400", "text-amber-400");
+                activeBtn.classList.remove("border-transparent", "text-slate-400");
+            }
+
+            renderAllViews();
+        }
+
+        // DATA PERSISTENCE
+        function loadLocalData() {
+            const stored = localStorage.getItem("beawar_election_emp_data");
+            if (stored) {
+                try { employees = JSON.parse(stored); } catch (e) { employees = [...SAMPLE_BEAWAR_DATA]; }
+            } else {
+                employees = [...SAMPLE_BEAWAR_DATA];
+                saveLocalData();
+            }
+        }
+
+        function saveLocalData() {
+            localStorage.setItem("beawar_election_emp_data", JSON.stringify(employees));
+            renderAllViews();
+        }
+
+        function loadSampleBeawarData() {
+            employees = [...SAMPLE_BEAWAR_DATA];
+            saveLocalData();
+            Swal.fire({ icon: 'success', title: 'Sample Data Loaded', text: 'Beawar District employee records populated!' });
+        }
+
+        function clearDatabase() {
+            Swal.fire({
+                title: 'Clear All Database Records?',
+                text: 'This will remove all current employees from the database so you can upload your new Excel sheet.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Clear All',
+                confirmButtonColor: '#dc2626'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    employees = [];
+                    saveLocalData();
+                    Swal.fire({ icon: 'info', title: 'Database Cleared', text: 'All employee records cleared. Please upload your Excel sheet now.' });
+                }
+            });
+        }
+
+        // RENDER VIEWS & DASHBOARD STATS
+        function renderAllViews() {
+            renderDashboardStats();
+            applyFilters();
+            renderReportView();
+            renderStaffTable();
+        }
+
+        function renderDashboardStats() {
+            const total = employees.length;
+            const present = employees.filter(e => e.Status === "Present").length;
+            const absent = employees.filter(e => e.Status === "Absent").length;
+            const pending = total - (present + absent);
+
+            document.getElementById("statTotal").innerText = total;
+            document.getElementById("statPresent").innerText = present;
+            document.getElementById("statAbsent").innerText = absent;
+            document.getElementById("statPending").innerText = pending;
+
+            const presentPct = total ? ((present / total) * 100).toFixed(1) : 0;
+            const absentPct = total ? ((absent / total) * 100).toFixed(1) : 0;
+            const pendingPct = total ? ((pending / total) * 100).toFixed(1) : 0;
+
+            document.getElementById("statPresentPct").innerText = `${presentPct}% Present Rate`;
+            document.getElementById("statAbsentPct").innerText = `${absentPct}% Absent Rate`;
+            document.getElementById("statPendingPct").innerText = `${pendingPct}% Remaining`;
+
+            // Tehsil Breakdown
+            // Dynamic Tehsil List from dataset
+            const datasetTehsils = [...new Set(employees.map(e => (e.Tehsil_Block || 'Beawar').trim()))];
+            const defaultTehsils = ["Beawar", "Jaitaran", "Masuda", "Todgarh", "Raipur", "Badnor", "Vijaynagar"];
+            const allTehsils = [...new Set([...datasetTehsils, ...defaultTehsils])].filter(Boolean);
+
+            const tehsilContainer = document.getElementById("tehsilProgressList");
+            tehsilContainer.innerHTML = "";
+
+            allTehsils.forEach(t => {
+                const tEmps = employees.filter(e => (e.Tehsil_Block || '').trim().toLowerCase() === t.toLowerCase());
+                const tTotal = tEmps.length;
+                if (tTotal === 0 && datasetTehsils.length > 0 && !defaultTehsils.includes(t)) return;
+
+                const tPres = tEmps.filter(e => e.Status === "Present").length;
+                const tAbs = tEmps.filter(e => e.Status === "Absent").length;
+                const tPct = tTotal ? Math.round((tPres / tTotal) * 100) : 0;
+
+                tehsilContainer.innerHTML += `
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-1">
+                            <span class="text-slate-700">${t} (${tPres}/${tTotal})</span>
+                            <span class="text-emerald-700">${tPct}%</span>
+                        </div>
+                        <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden flex">
+                            <div class="bg-emerald-500 h-full" style="width: ${tPct}%"></div>
+                            <div class="bg-rose-500 h-full" style="width: ${tTotal ? (tAbs/tTotal)*100 : 0}%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Populate Tehsil & Dept dropdowns dynamically
+            updateDropdownOptions(allTehsils);
+
+            // Reasons Chart
+            renderReasonsChart();
+        }
+
+        function updateDropdownOptions(tehsils) {
+            const tehsilSelect = document.getElementById("filterTehsil");
+            const currentTehsil = tehsilSelect.value;
+            tehsilSelect.innerHTML = `<option value="">All Tehsils (सभी तहसीलें)</option>`;
+            tehsils.forEach(t => {
+                tehsilSelect.innerHTML += `<option value="${t}" ${t === currentTehsil ? 'selected' : ''}>${t}</option>`;
+            });
+
+            const depts = [...new Set(employees.map(e => (e.Department || '').trim()))].filter(Boolean);
+            const deptSelect = document.getElementById("filterDept");
+            const currentDept = deptSelect.value;
+            deptSelect.innerHTML = `<option value="">All Departments (सभी विभाग)</option>`;
+            depts.forEach(d => {
+                deptSelect.innerHTML += `<option value="${d}" ${d === currentDept ? 'selected' : ''}>${d}</option>`;
+            });
+        }
+
+        function renderReasonsChart() {
+            const ctx = document.getElementById('reasonsChart').getContext('2d');
+            const absentees = employees.filter(e => e.Status === "Absent");
+            const reasonsMap = {};
+
+            absentees.forEach(e => {
+                const r = e.Absence_Reason || "Not Specified";
+                reasonsMap[r] = (reasonsMap[r] || 0) + 1;
+            });
+
+            const labels = Object.keys(reasonsMap).length ? Object.keys(reasonsMap) : ["No Absentees Recorded"];
+            const data = Object.keys(reasonsMap).length ? Object.values(reasonsMap) : [1];
+            const colors = ['#ef4444', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
+
+            if (reasonsChartInstance) reasonsChartInstance.destroy();
+
+            reasonsChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors.slice(0, labels.length)
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            const legendBox = document.getElementById("reasonsLegend");
+            legendBox.innerHTML = "";
+            labels.forEach((l, idx) => {
+                legendBox.innerHTML += `
+                    <div class="flex items-center space-x-1.5 font-semibold text-slate-700">
+                        <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${colors[idx]}"></span>
+                        <span class="truncate">${l}: ${reasonsMap[l] || 0}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // ATTENDANCE MARKING AND FILTERS
+        function applyFilters() {
+            const q = document.getElementById("searchInput").value.toLowerCase();
+            const tehsil = document.getElementById("filterTehsil").value;
+            const dept = document.getElementById("filterDept").value;
+            const status = document.getElementById("filterStatus").value;
+
+            const filtered = employees.filter(e => {
+                const matchesQ = !q || (
+                    (e.Emp_ID && e.Emp_ID.toLowerCase().includes(q)) ||
+                    (e.Name && e.Name.toLowerCase().includes(q)) ||
+                    (e.Designation && e.Designation.toLowerCase().includes(q)) ||
+                    (e.Mobile_No && e.Mobile_No.includes(q)) ||
+                    (e.Office_School_Name && e.Office_School_Name.toLowerCase().includes(q))
+                );
+                const matchesTehsil = !tehsil || (e.Tehsil_Block === tehsil);
+                const matchesDept = !dept || (e.Department === dept);
+                const matchesStatus = !status || (e.Status === status || (!e.Status && status === 'Pending'));
+                return matchesQ && matchesTehsil && matchesDept && matchesStatus;
+            });
+
+            document.getElementById("filterCount").innerText = `Showing ${filtered.length} of ${employees.length} employees`;
+
+            const tbody = document.getElementById("attendanceTableBody");
+            tbody.innerHTML = "";
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="7" class="p-8 text-center text-slate-400 font-semibold">No employee records match your filters.</td></tr>
+                `;
+                return;
+            }
+
+            filtered.forEach(e => {
+                let badgeClass = "badge-pending";
+                let statusText = "PENDING";
+                if (e.Status === "Present") { badgeClass = "badge-present"; statusText = `PRESENT (${e.Time || ''})`; }
+                else if (e.Status === "Absent") { badgeClass = "badge-absent"; statusText = `ABSENT: ${e.Absence_Reason || ''}`; }
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="p-3 font-mono font-bold text-slate-800">${e.Emp_ID || '-'}</td>
+                        <td class="p-3">
+                            <b class="text-slate-900 text-sm block">${e.Name || '-'}</b>
+                            <span class="text-slate-500 text-[11px]">${e.Designation || '-'}</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="font-semibold text-slate-700 block">${e.Department || '-'}</span>
+                            <span class="text-slate-500 text-[11px]">${e.Office_School_Name || '-'}</span>
+                        </td>
+                        <td class="p-3 font-semibold text-slate-700">${e.Tehsil_Block || '-'}</td>
+                        <td class="p-3">
+                            <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-bold text-[11px]">${e.Duty_Assigned || 'Election Duty'}</span>
+                            <span class="block text-slate-400 text-[10px] mt-0.5">${e.Training_Batch || ''}</span>
+                        </td>
+                        <td class="p-3">
+                            <span class="px-2.5 py-1 rounded-full font-bold text-[10px] inline-block ${badgeClass}">${statusText}</span>
+                        </td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center space-x-1">
+                                <button onclick="markPresent('${e.Emp_ID}')" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded font-bold text-[11px] transition shadow-sm">
+                                    <i class="fas fa-check mr-1"></i>Present
+                                </button>
+                                <button onclick="openAbsentModal('${e.Emp_ID}')" class="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded font-bold text-[11px] transition shadow-sm">
+                                    <i class="fas fa-times mr-1"></i>Absent
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function markPresent(empId) {
+            const idx = employees.findIndex(e => e.Emp_ID === empId);
+            if (idx !== -1) {
+                const now = new Date();
+                employees[idx].Status = "Present";
+                employees[idx].Time = now.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
+                employees[idx].Absence_Reason = "";
+                saveLocalData();
+                pushToCloudSingle(employees[idx]);
+            }
+        }
+
+        function openAbsentModal(empId) {
+            const emp = employees.find(e => e.Emp_ID === empId);
+            if (!emp) return;
+
+            document.getElementById("modalEmpId").value = emp.Emp_ID;
+            document.getElementById("modalEmpName").innerText = emp.Name;
+            document.getElementById("modalEmpMeta").innerText = `${emp.Emp_ID} | ${emp.Designation} (${emp.Department})`;
+            document.getElementById("modalReasonSelect").value = "";
+            document.getElementById("modalExemptionRef").value = "";
+            document.getElementById("modalRemarks").value = "";
+            document.getElementById("absentModal").classList.remove("hidden");
+        }
+
+        function closeAbsentModal() {
+            document.getElementById("absentModal").classList.add("hidden");
+        }
+
+        function submitAbsentReason(e) {
+            e.preventDefault();
+            const empId = document.getElementById("modalEmpId").value;
+            const reason = document.getElementById("modalReasonSelect").value;
+            const ref = document.getElementById("modalExemptionRef").value;
+            const remarks = document.getElementById("modalRemarks").value;
+
+            const idx = employees.findIndex(e => e.Emp_ID === empId);
+            if (idx !== -1) {
+                employees[idx].Status = "Absent";
+                employees[idx].Absence_Reason = reason;
+                employees[idx].Exemption_Ref = ref;
+                employees[idx].Remarks = remarks;
+                employees[idx].Time = new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
+                saveLocalData();
+                pushToCloudSingle(employees[idx]);
+                closeAbsentModal();
+            }
+        }
+
+        function markFilteredPresent() {
+            Swal.fire({
+                title: 'Mark All Present?',
+                text: 'This will set status as Present for all currently filtered employees.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Mark Present',
+                confirmButtonColor: '#059669'
+            }).then((res) => {
+                if (res.isConfirmed) {
+                    const q = document.getElementById("searchInput").value.toLowerCase();
+                    const tehsil = document.getElementById("filterTehsil").value;
+                    const dept = document.getElementById("filterDept").value;
+
+                    const now = new Date().toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit' });
+                    employees.forEach(e => {
+                        const matchesQ = !q || (e.Emp_ID && e.Emp_ID.toLowerCase().includes(q)) || (e.Name && e.Name.toLowerCase().includes(q));
+                        const matchesTehsil = !tehsil || (e.Tehsil_Block === tehsil);
+                        const matchesDept = !dept || (e.Department === dept);
+
+                        if (matchesQ && matchesTehsil && matchesDept && e.Status !== "Absent") {
+                            e.Status = "Present";
+                            e.Time = now;
+                        }
+                    });
+                    saveLocalData();
+                }
+            });
+        }
+
+        function resetFilters() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("filterTehsil").value = "";
+            document.getElementById("filterDept").value = "";
+            document.getElementById("filterStatus").value = "";
+            applyFilters();
+        }
+
+        // QR CODE SCANNER
+        function initQrScanner() {
+            if (html5QrScanner) return;
+            html5QrScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 220 });
+            html5QrScanner.render((decodedText) => {
+                handleScanResult(decodedText);
+            });
+        }
+
+        function stopQrScanner() {
+            if (html5QrScanner) {
+                html5QrScanner.clear().catch(e => console.error(e));
+                html5QrScanner = null;
+            }
+        }
+
+        function handleManualQrSubmit() {
+            const val = document.getElementById("manualQrInput").value.trim();
+            if (val) handleScanResult(val);
+        }
+
+        function handleScanResult(scannedCode) {
+            const emp = employees.find(e => e.Emp_ID.toLowerCase() === scannedCode.toLowerCase() || e.Mobile_No === scannedCode);
+            if (emp) {
+                markPresent(emp.Emp_ID);
+                Swal.fire({ icon: 'success', title: 'Attendance Marked!', text: `Emp: ${emp.Name} (${emp.Emp_ID}) set as Present`, timer: 2000, showConfirmButton: false });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Employee Not Found', text: `No employee record matches ID: ${scannedCode}` });
+            }
+        }
+
+        // EXCEL PARSING & UPLOAD (SheetJS)
+        function initDragAndDrop() {
+            const zone = document.getElementById("dropZone");
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(evt => {
+                zone.addEventListener(evt, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
+            });
+            zone.addEventListener('drop', (e) => {
+                const files = e.dataTransfer.files;
+                if (files.length) processExcelFile(files[0]);
+            });
+        }
+
+        function handleExcelUpload(e) {
+            const file = e.target.files[0];
+            if (file) processExcelFile(file);
+        }
+
+        function processExcelFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                try {
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const rawRows = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+
+                    if (!rawRows || !rawRows.length) {
+                        Swal.fire({ icon: 'warning', title: 'Empty File', text: 'No rows found in Excel sheet.' });
+                        return;
+                    }
+
+                    // Flexible Column Finder Helper
+                    const getColVal = (row, possibleKeys) => {
+                        const rowKeys = Object.keys(row);
+                        for (const key of possibleKeys) {
+                            const exactMatch = rowKeys.find(k => k.trim().toLowerCase() === key.trim().toLowerCase());
+                            if (exactMatch && row[exactMatch] !== undefined && row[exactMatch] !== null) {
+                                return String(row[exactMatch]).trim();
+                            }
+                        }
+                        // Partial match fallback
+                        for (const key of possibleKeys) {
+                            const partialMatch = rowKeys.find(k => k.toLowerCase().includes(key.toLowerCase()));
+                            if (partialMatch && row[partialMatch] !== undefined && row[partialMatch] !== null) {
+                                return String(row[partialMatch]).trim();
+                            }
+                        }
+                        return '';
+                    };
+
+                    // Map columns supporting Rajasthan Govt Hindi headers
+                    const parsedEmployees = rawRows.map((r, i) => {
+                        const empId = getColVal(r, ['Emp_ID', 'Emp ID', 'ID', 'Emp Code', 'कार्मिक का कोड', 'कार्मिक कोड', 'कर्मचारी का कोड', 'कर्मचारी कोड', 'कोड']) || `BWR-${1000 + i + 1}`;
+                        const name = getColVal(r, ['Name', 'Emp Name', 'Employee Name', 'Full Name', 'कार्मिक का नाम', 'कार्मिक नाम', 'कर्मचारी का नाम', 'कर्मचारी नाम', 'नाम']) || `Employee ${i + 1}`;
+                        const desig = getColVal(r, ['Designation', 'Post', 'विभागीय पद', 'पदनाम', 'पद']) || 'Teacher / Staff';
+                        const dept = getColVal(r, ['Department', 'Dept', 'विभाग', 'विभागीय नाम', 'विभाग का नाम']) || 'School Education';
+                        const office = getColVal(r, ['Office_School_Name', 'Office', 'School', 'वर्तमान पद स्थापना स्थल', 'कार्यालय/स्कूल', 'कार्यालय']) || 'Govt Office';
+                        
+                        let rawTehsil = getColVal(r, ['Tehsil_Block', 'Tehsil', 'Block', 'वर्तमान पद स्थापना स्थल-तहसील', 'तहसील नाम', 'तहसील']) || 'Beawar';
+                        // Clean Tehsil (e.g. "Masuda-8" -> "Masuda")
+                        let cleanTehsil = rawTehsil.replace(/[-_\s]*\d+$/g, '').trim();
+                        if (!cleanTehsil) cleanTehsil = 'Beawar';
+
+                        const mobile = getColVal(r, ['Mobile_No', 'Mobile', 'Contact', 'Phone', 'मोबाइल नंबर', 'मोबाइल नं', 'मोबाइल']) || '';
+                        const duty = getColVal(r, ['Duty_Assigned', 'Duty', 'चुनाव ड्यूटी', 'ड्यूटी']) || 'Polling Officer';
+                        const batch = getColVal(r, ['Training_Batch', 'Batch', 'बैच']) || 'Batch 1';
+                        const status = getColVal(r, ['Status', 'स्थिति']) || 'Pending';
+                        const reason = getColVal(r, ['Absence_Reason', 'Reason', 'कारण']) || '';
+
+                        return {
+                            Emp_ID: empId,
+                            Name: name,
+                            Designation: desig,
+                            Department: dept,
+                            Office_School_Name: office,
+                            Tehsil_Block: cleanTehsil,
+                            Mobile_No: mobile,
+                            Duty_Assigned: duty,
+                            Training_Batch: batch,
+                            Status: status,
+                            Absence_Reason: reason,
+                            Exemption_Ref: r['Exemption_Ref'] || ''
+                        };
+                    });
+
+                    // Replace current employees array with full parsed rows
+                    employees = parsedEmployees;
+                    saveLocalData();
+                    renderAllViews();
+
+                    Swal.fire({ 
+                        icon: 'success', 
+                        title: 'Excel File Uploaded!', 
+                        html: `<b class="text-emerald-700 text-lg">${employees.length} Employees</b> imported into Database successfully!`,
+                        confirmButtonColor: '#059669'
+                    });
+                } catch (err) {
+                    console.error(err);
+                    Swal.fire({ icon: 'error', title: 'Parsing Error', text: 'Could not parse Excel structure. Please ensure it is a valid .xlsx or .csv file.' });
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function downloadSampleTemplate() {
+            const ws = XLSX.utils.json_to_sheet(SAMPLE_BEAWAR_DATA);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Employee_Database");
+            XLSX.writeFile(wb, "Beawar_Election_Employee_Template.xlsx");
+        }
+
+        function exportCurrentDatabase() {
+            const exportData = employees.map(e => ({
+                "Emp ID": e.Emp_ID,
+                "Name": e.Name,
+                "Designation": e.Designation,
+                "Department": e.Department,
+                "Office / School": e.Office_School_Name,
+                "Tehsil / Block": e.Tehsil_Block,
+                "Mobile No": e.Mobile_No,
+                "Duty Assigned": e.Duty_Assigned,
+                "Training Batch": e.Training_Batch,
+                "Attendance Status": e.Status || "Pending",
+                "Time Marked": e.Time || "",
+                "Absence Reason": e.Absence_Reason || "",
+                "Exemption Certificate Ref": e.Exemption_Ref || "",
+                "Remarks": e.Remarks || ""
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Attendance_Report");
+            XLSX.writeFile(wb, `Beawar_Election_Attendance_Report_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        // DEO REPORT VIEW RENDER
+        function renderReportView() {
+            const total = employees.length;
+            const present = employees.filter(e => e.Status === "Present").length;
+            const absent = employees.filter(e => e.Status === "Absent").length;
+            const pct = total ? ((present / total) * 100).toFixed(1) : 0;
+
+            document.getElementById("reportTotal").innerText = total;
+            document.getElementById("reportPresent").innerText = present;
+            document.getElementById("reportAbsent").innerText = absent;
+            document.getElementById("reportPct").innerText = `${pct}%`;
+
+            const absBody = document.getElementById("reportAbsenteeBody");
+            absBody.innerHTML = "";
+
+            const absentees = employees.filter(e => e.Status === "Absent");
+            if (!absentees.length) {
+                absBody.innerHTML = `<tr><td colspan="7" class="border p-4 text-center text-slate-500 font-semibold">कोई अनुपस्थिति दर्ज नहीं है। (No absentees recorded)</td></tr>`;
+                return;
+            }
+
+            absentees.forEach((e, idx) => {
+                absBody.innerHTML += `
+                    <tr>
+                        <td class="border p-2 font-bold">${idx + 1}</td>
+                        <td class="border p-2"><b class="block">${e.Name}</b><span class="text-[10px] text-slate-500">${e.Emp_ID}</span></td>
+                        <td class="border p-2 font-semibold">${e.Designation}<br><span class="text-[10px] text-slate-500">${e.Department}</span></td>
+                        <td class="border p-2">${e.Tehsil_Block}</td>
+                        <td class="border p-2 font-mono">${e.Mobile_No}</td>
+                        <td class="border p-2 font-bold text-rose-700">${e.Absence_Reason || 'Not Specified'}</td>
+                        <td class="border p-2">${e.Exemption_Ref || '-'}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // CLOUD SYNC LOGIC
+        function saveCloudSettings() {
+            const url = document.getElementById("googleSheetUrl").value.trim();
+            if (url.includes("docs.google.com/spreadsheets")) {
+                showGoogleSheetHelpModal();
+                return;
+            }
+            localStorage.setItem("beawar_google_sheet_url", url);
+            Swal.fire({ icon: 'success', title: 'Settings Saved', text: 'Cloud API Webhook URL saved successfully.' });
+        }
+
+        function showGoogleSheetHelpModal() {
+            Swal.fire({
+                icon: 'info',
+                title: 'Google Sheet Webhook Required!',
+                html: `
+                    <div class="text-left text-xs space-y-3 font-sans text-slate-700">
+                        <p class="font-bold text-rose-600">⚠️ You pasted the Google Sheet view link instead of the Apps Script Webhook URL.</p>
+                        <p>Google requires a <b>Web App Webhook</b> to write data to your sheet automatically:</p>
+                        <ol class="list-decimal pl-4 space-y-1 font-semibold text-slate-800">
+                            <li>In your Google Sheet (<b>AttendanceTracker</b>), click <b>Extensions &gt; Apps Script</b>.</li>
+                            <li>Paste the code from <code class="bg-slate-100 p-0.5 border rounded">google_appscript_backend.js</code> in this project folder.</li>
+                            <li>Click <b>Deploy &gt; New Deployment &gt; Web app</b>.</li>
+                            <li>Set <i>"Who has access"</i> to <b>"Anyone"</b>.</li>
+                            <li>Copy the generated Web App URL (starts with <code>https://script.google.com/macros/s/...</code>) and paste THAT link here!</li>
+                        </ol>
+                    </div>
+                `,
+                confirmButtonText: 'Got It!',
+                confirmButtonColor: '#2563eb'
+            });
+        }
+
+        function pushToCloudSingle(emp) {
+            const url = localStorage.getItem("beawar_google_sheet_url");
+            if (!url || url.includes("docs.google.com/spreadsheets")) return;
+
+            fetch(url, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "MARK_ATTENDANCE",
+                    empId: emp.Emp_ID,
+                    name: emp.Name,
+                    designation: emp.Designation,
+                    department: emp.Department,
+                    tehsil: emp.Tehsil_Block,
+                    mobile: emp.Mobile_No,
+                    batch: emp.Training_Batch,
+                    status: emp.Status,
+                    reason: emp.Absence_Reason,
+                    markedBy: currentUser ? currentUser.label : 'Trainer'
+                })
+            }).catch(err => console.error("Cloud push failed:", err));
+        }
+
+        function syncAllToCloud() {
+            const url = document.getElementById("googleSheetUrl").value.trim() || localStorage.getItem("beawar_google_sheet_url");
+            
+            if (!url) {
+                Swal.fire({ icon: 'warning', title: 'Missing Webhook URL', text: 'Please enter your Google Sheet Webhook URL in Cloud Sync tab.' });
+                return;
+            }
+
+            if (url.includes("docs.google.com/spreadsheets")) {
+                showGoogleSheetHelpModal();
+                return;
+            }
+
+            fetch(url, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "BATCH_SYNC",
+                    records: employees.map(e => ({
+                        empId: e.Emp_ID,
+                        name: e.Name,
+                        designation: e.Designation,
+                        department: e.Department,
+                        tehsil: e.Tehsil_Block,
+                        mobile: e.Mobile_No,
+                        batch: e.Training_Batch,
+                        status: e.Status,
+                        reason: e.Absence_Reason,
+                        markedBy: currentUser ? currentUser.label : 'Trainer'
+                    }))
+                })
+            }).then(() => {
+                Swal.fire({ icon: 'success', title: 'Batch Sync Sent!', text: `${employees.length} records pushed to your Google Sheet.` });
+            }).catch(err => Swal.fire({ icon: 'error', title: 'Sync Failed', text: err.toString() }));
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+Emp_ID,Name,Designation,Department,Office_School_Name,Tehsil_Block,Mobile_No,Duty_Assigned,Training_Batch,Training_Date
+BWR-1001,Rajesh Kumar Sharma,Senior Teacher,School Education,Govt Sr Sec School Beawar,Beawar,9414012345,Presiding Officer (PRO),Batch 1 (Hall A),2026-08-10
+BWR-1002,Sunita Verma,Lecturer Chemistry,School Education,Govt Girls Sr Sec School Beawar,Beawar,9829023456,Polling Officer 1 (PO-1),Batch 1 (Hall A),2026-08-10
+BWR-1003,Mahendra Singh Rathore,Patwari,Revenue Department,Tehsil Office Jaitaran,Jaitaran,9414534567,Polling Officer 2 (PO-2),Batch 2 (Hall B),2026-08-10
+BWR-1004,Ramesh Chandra Jat,Gram Vikas Adhikari,Panchayati Raj,Gram Panchayat Masuda,Masuda,9928045678,Presiding Officer (PRO),Batch 3 (Hall C),2026-08-10
+BWR-1005,Anita Meena,Junior Assistant,Agriculture Department,Assistant Director Office Beawar,Beawar,9784056789,Polling Officer 3 (PO-3),Batch 1 (Hall A),2026-08-10
+BWR-1006,Dinesh Kumar Choudhary,Teacher Gr-III,School Education,Govt Upper Primary School Todgarh,Todgarh,9413067890,Polling Officer 1 (PO-1),Batch 2 (Hall B),2026-08-10
+BWR-1007,Prakash Bhati,Agriculture Supervisor,Agriculture Department,Kishi Seva Kendra Raipur,Raipur,9828078901,Polling Officer 2 (PO-2),Batch 3 (Hall C),2026-08-10
+BWR-1008,Kavita Gurjar,Senior Nurse,Medical & Health,CHC Badnor,Badnor,9414089012,Polling Officer 3 (PO-3),Batch 1 (Hall A),2026-08-10
+BWR-1009,Vikram Singh Solanki,Junior Engineer,PHED,PHED Sub Division Vijaynagar,Vijaynagar,9929090123,Presiding Officer (PRO),Batch 2 (Hall B),2026-08-10
+BWR-1010,Suresh Chand Mali,Patwari,Revenue Department,Tehsil Office Beawar,Beawar,9785101234,Polling Officer 1 (PO-1),Batch 1 (Hall A),2026-08-10
+BWR-1011,Mamta Rawat,Teacher Gr-II,School Education,Govt Sec School Chang (Beawar),Beawar,9413112345,Polling Officer 2 (PO-2),Batch 1 (Hall A),2026-08-10
+BWR-1012,Gopal Lal Vaishnav,Assistant Revenue Inspector,Revenue Department,Sub-Divisional Office Jaitaran,Jaitaran,9829123456,Presiding Officer (PRO),Batch 2 (Hall B),2026-08-10
+BWR-1013,Lalit Kumar Vaishnav,Teacher Gr-III,School Education,Govt Primary School Jaitaran,Jaitaran,9414134567,Polling Officer 3 (PO-3),Batch 2 (Hall B),2026-08-10
+BWR-1014,Pooja Pareek,Librarian Gr-III,School Education,Govt Sr Sec School Masuda,Masuda,9928145678,Polling Officer 1 (PO-1),Batch 3 (Hall C),2026-08-10
+BWR-1015,Bhagwan Sahay Saini,Gram Vikas Adhikari,Panchayati Raj,Gram Panchayat Todgarh,Todgarh,9784156789,Presiding Officer (PRO),Batch 2 (Hall B),2026-08-10
+BWR-1016,Manju Devi Regar,Junior Assistant,Panchayati Raj,Panchayat Samiti Raipur,Raipur,9413167890,Polling Officer 2 (PO-2),Batch 3 (Hall C),2026-08-10
+BWR-1017,Hemant Kumar Sharma,Senior Teacher,School Education,Govt Sr Sec School Badnor,Badnor,9828178901,Presiding Officer (PRO),Batch 1 (Hall A),2026-08-10
+BWR-1018,Surendra Singh Chauhan,Assistant Engineer,PWD,PWD Division Beawar,Beawar,9414189012,Presiding Officer (PRO),Batch 1 (Hall A),2026-08-10
+BWR-1019,Rekha Sharma,Senior Teacher Math,School Education,Govt Girls Sec School Vijaynagar,Vijaynagar,9929190123,Polling Officer 1 (PO-1),Batch 2 (Hall B),2026-08-10
+BWR-1020,Devendra Kumar Agarwal,Junior Accountant,Treasury Department,Sub Treasury Jaitaran,Jaitaran,9785201234,Polling Officer 2 (PO-2),Batch 2 (Hall B),2026-08-10
+BWR-1021,Santosh Kanwar,Teacher Gr-III,School Education,Govt Primary School Masuda,Masuda,9413212345,Polling Officer 3 (PO-3),Batch 3 (Hall C),2026-08-10
+BWR-1022,Ashok Kumar Kumawat,Patwari,Revenue Department,Tehsil Office Todgarh,Todgarh,9829223456,Polling Officer 1 (PO-1),Batch 2 (Hall B),2026-08-10
+BWR-1023,Nirmala Kumari,Senior Nurse Gr-II,Medical & Health,PHC Raipur,Raipur,9414234567,Polling Officer 2 (PO-2),Batch 3 (Hall C),2026-08-10
+BWR-1024,Mukesh Chandra Joshi,Physical Teacher (PTI),School Education,Govt Sr Sec School Badnor,Badnor,9928245678,Polling Officer 3 (PO-3),Batch 1 (Hall A),2026-08-10
+BWR-1025,Pravin Kumar Swarnkar,Lecturer History,School Education,Govt Sr Sec School Vijaynagar,Vijaynagar,9784256789,Presiding Officer (PRO),Batch 2 (Hall B),2026-08-10
+BWR-1026,Deepak Sharma,Pharmacist,Medical & Health,SDH Beawar,Beawar,9413267890,Polling Officer 1 (PO-1),Batch 1 (Hall A),2026-08-10
+BWR-1027,Sunil Dutt Vyas,Senior Teacher English,School Education,Govt Sr Sec School Jaitaran,Jaitaran,9828278901,Polling Officer 2 (PO-2),Batch 2 (Hall B),2026-08-10
+BWR-1028,Aarti Saxena,Computer Instructor,School Education,Govt Girls Sr Sec School Masuda,Masuda,9414289012,Polling Officer 3 (PO-3),Batch 3 (Hall C),2026-08-10
+BWR-1029,Narendra Kumar Bairwa,Gram Vikas Adhikari,Panchayati Raj,Gram Panchayat Bar (Raipur),Raipur,9929290123,Presiding Officer (PRO),Batch 3 (Hall C),2026-08-10
+BWR-1030,Kalyan Sahay Mina,Teacher Gr-II Hindi,School Education,Govt Sec School Jawaja (Beawar),Beawar,9785301234,Polling Officer 1 (PO-1),Batch 1 (Hall A),2026-08-10
