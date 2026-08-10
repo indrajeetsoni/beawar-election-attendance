@@ -888,7 +888,8 @@
         function loadSampleBeawarData() {
             employees = [...SAMPLE_BEAWAR_DATA];
             saveLocalData();
-            Swal.fire({ icon: 'success', title: 'Sample Data Loaded', text: 'Beawar District employee records populated!' });
+            syncAllToCloud(true);
+            Swal.fire({ icon: 'success', title: 'Sample Data Loaded', text: 'Beawar District employee records populated and synced to Google Sheet!' });
         }
 
         function clearDatabase() {
@@ -1332,11 +1333,12 @@
                     employees = parsedEmployees;
                     saveLocalData();
                     renderAllViews();
+                    syncAllToCloud(true);
 
                     Swal.fire({ 
                         icon: 'success', 
                         title: 'Excel File Uploaded!', 
-                        html: `<b class="text-emerald-700 text-lg">${employees.length} Employees</b> imported into Database successfully!`,
+                        html: `<b class="text-emerald-700 text-lg">${employees.length} Employees</b> imported into Database and synced to Google Sheet!`,
                         confirmButtonColor: '#059669'
                     });
                 } catch (err) {
@@ -1546,16 +1548,16 @@
                 });
         }
 
-        function syncAllToCloud() {
-            const url = document.getElementById("googleSheetUrl").value.trim() || localStorage.getItem("beawar_google_sheet_url");
+        function syncAllToCloud(silent = false) {
+            const url = (document.getElementById("googleSheetUrl") ? document.getElementById("googleSheetUrl").value.trim() : "") || localStorage.getItem("beawar_google_sheet_url");
             
             if (!url) {
-                Swal.fire({ icon: 'warning', title: 'Missing Webhook URL', text: 'Please enter your Google Sheet Webhook URL in Cloud Sync tab.' });
+                if (!silent) Swal.fire({ icon: 'warning', title: 'Missing Webhook URL', text: 'Please enter your Google Sheet Webhook URL in Cloud Sync tab.' });
                 return;
             }
 
             if (url.includes("docs.google.com/spreadsheets")) {
-                showGoogleSheetHelpModal();
+                if (!silent) showGoogleSheetHelpModal();
                 return;
             }
 
@@ -1568,6 +1570,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "BATCH_SYNC",
+                    clearFirst: true,
                     records: employees.map(e => ({
                         empId: e.Emp_ID,
                         name: e.Name,
@@ -1578,12 +1581,14 @@
                         batch: e.Training_Batch,
                         status: e.Status,
                         reason: e.Absence_Reason,
-                        markedBy: currentUser ? (currentUser.name || currentUser.label) : 'Attendance Officer'
+                        markedBy: currentUser ? (currentUser.name || currentUser.username) : 'Attendance Officer'
                     }))
                 })
             }).then(() => {
-                Swal.fire({ icon: 'success', title: 'Batch Sync Sent!', text: `${employees.length} attendance records & ${staffUsers.length} user accounts pushed to Google Sheet.` });
-            }).catch(err => Swal.fire({ icon: 'error', title: 'Sync Failed', text: err.toString() }));
+                if (!silent) Swal.fire({ icon: 'success', title: 'Batch Sync Sent!', text: `${employees.length} attendance records & ${staffUsers.length} user accounts pushed to Google Sheet.` });
+            }).catch(err => {
+                if (!silent) Swal.fire({ icon: 'error', title: 'Sync Failed', text: err.toString() });
+            });
         }
     </script>
 </body>
