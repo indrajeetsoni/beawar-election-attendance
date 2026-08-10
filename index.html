@@ -718,9 +718,9 @@
             // Refresh from local storage to ensure newly added accounts are active
             loadStaffUsers();
 
-            let matchedUser = staffUsers.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+            let matchedUser = staffUsers.find(u => (u.username || '').trim().toLowerCase() === uInput && String(u.password || '').trim() === pInput);
             if (!matchedUser) {
-                matchedUser = DEFAULT_STAFF_ACCOUNTS.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+                matchedUser = DEFAULT_STAFF_ACCOUNTS.find(u => (u.username || '').trim().toLowerCase() === uInput && String(u.password || '').trim() === pInput);
             }
 
             if (!matchedUser) {
@@ -1530,20 +1530,18 @@
                             syncAllToCloud(true);
                         }
 
+                        // Smart merge users by username
+                        const userMap = {};
+                        DEFAULT_STAFF_ACCOUNTS.forEach(u => { if (u.username) userMap[u.username.toLowerCase()] = u; });
                         if (data.users && data.users.length > 0) {
-                            const fetchedUsers = data.users;
-                            const hasAdmin = fetchedUsers.some(u => u.username.toLowerCase() === 'admin');
-                            if (!hasAdmin) {
-                                staffUsers = [DEFAULT_STAFF_ACCOUNTS[0], ...fetchedUsers];
-                            } else {
-                                staffUsers = fetchedUsers;
-                            }
-                            localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
-                            renderStaffTable();
-                            userMsg = `${data.users.length} user accounts`;
-                        } else if (staffUsers.length > 0) {
-                            pushUsersToCloud();
+                            data.users.forEach(u => { if (u.username) userMap[u.username.toLowerCase()] = u; });
                         }
+                        staffUsers.forEach(u => { if (u.username) userMap[u.username.toLowerCase()] = u; });
+
+                        staffUsers = Object.values(userMap);
+                        localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+                        renderStaffTable();
+                        userMsg = `${staffUsers.length} user accounts`;
 
                         renderAllViews();
 
