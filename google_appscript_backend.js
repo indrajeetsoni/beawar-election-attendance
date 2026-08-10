@@ -39,12 +39,12 @@ function doGet(e) {
         var uRow = userRows[i];
         if (uRow[1] || uRow[2]) {
           users.push({
-            name: String(uRow[1] || ''),
-            username: String(uRow[2] || ''),
-            password: String(uRow[3] || ''),
+            name: String(uRow[1] || '').trim(),
+            username: String(uRow[2] || '').trim(),
+            password: String(uRow[3] || '').trim(),
             role: String(uRow[4] || 'staff').toLowerCase().includes('admin') ? 'admin' : 'staff',
-            assignedTehsil: String(uRow[5] || 'All Tehsils'),
-            status: String(uRow[6] || 'Active')
+            assignedTehsil: String(uRow[5] || 'All Tehsils').trim(),
+            status: String(uRow[6] || 'Active').trim()
           });
         }
       }
