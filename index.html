@@ -654,28 +654,34 @@
         }
 
         function loadStaffUsers() {
-            const savedVersion = localStorage.getItem("beawar_staff_version");
             const stored = localStorage.getItem("beawar_staff_credentials");
+            let customUsers = [];
 
-            if (!stored || savedVersion !== CURRENT_VERSION) {
-                staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
-                localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
-                localStorage.setItem("beawar_staff_version", CURRENT_VERSION);
-                return;
-            }
-
-            try {
-                const parsed = JSON.parse(stored);
-                const hasAdmin = parsed.some(u => u.username.toLowerCase() === 'admin');
-                if (!hasAdmin) {
-                    const filteredStaff = parsed.filter(u => u.username.toLowerCase() !== 'admin');
-                    staffUsers = [DEFAULT_STAFF_ACCOUNTS[0], ...filteredStaff];
-                } else {
-                    staffUsers = parsed;
+            if (stored) {
+                try {
+                    customUsers = JSON.parse(stored);
+                } catch (e) {
+                    customUsers = [];
                 }
-            } catch (e) {
-                staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
             }
+
+            const userMap = {};
+            DEFAULT_STAFF_ACCOUNTS.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
+            if (Array.isArray(customUsers)) {
+                customUsers.forEach(u => { 
+                    if (u && u.username) {
+                        userMap[u.username.trim().toLowerCase()] = {
+                            name: String(u.name || '').trim(),
+                            username: String(u.username || '').trim().toLowerCase(),
+                            password: String(u.password || '').trim(),
+                            role: String(u.role || 'staff').toLowerCase().includes('admin') ? 'admin' : 'staff',
+                            assignedTehsil: String(u.assignedTehsil || 'All Tehsils').trim()
+                        };
+                    }
+                });
+            }
+
+            staffUsers = Object.values(userMap);
             localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
             localStorage.setItem("beawar_staff_version", CURRENT_VERSION);
         }
@@ -727,12 +733,12 @@
 
             loadStaffUsers();
 
-            // Live fetch from Google Sheet UserTracker
+            // Live fetch from Google Sheet UserTracker (bypassing browser cache)
             let liveUsers = [];
             const url = getCloudWebhookUrl();
             if (url && !url.includes("docs.google.com/spreadsheets")) {
                 try {
-                    const res = await fetch(url);
+                    const res = await fetch(url, { cache: "no-store" });
                     const data = await res.json();
                     if (data && data.status === "SUCCESS") {
                         if (data.users && data.users.length > 0) {
@@ -748,11 +754,31 @@
                 }
             }
 
-            // Combine default, local, and live Google Sheet UserTracker accounts
+            // Combine default, local, and live Google Sheet UserTracker accounts with trim-safety
             const userMap = {};
             DEFAULT_STAFF_ACCOUNTS.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
-            staffUsers.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
-            liveUsers.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
+            staffUsers.forEach(u => { 
+                if (u && u.username) {
+                    userMap[u.username.trim().toLowerCase()] = {
+                        name: String(u.name || '').trim(),
+                        username: String(u.username || '').trim().toLowerCase(),
+                        password: String(u.password || '').trim(),
+                        role: String(u.role || 'staff').toLowerCase().includes('admin') ? 'admin' : 'staff',
+                        assignedTehsil: String(u.assignedTehsil || 'All Tehsils').trim()
+                    };
+                }
+            });
+            liveUsers.forEach(u => { 
+                if (u && u.username) {
+                    userMap[u.username.trim().toLowerCase()] = {
+                        name: String(u.name || '').trim(),
+                        username: String(u.username || '').trim().toLowerCase(),
+                        password: String(u.password || '').trim(),
+                        role: String(u.role || 'staff').toLowerCase().includes('admin') ? 'admin' : 'staff',
+                        assignedTehsil: String(u.assignedTehsil || 'All Tehsils').trim()
+                    };
+                }
+            });
 
             const allValidUsers = Object.values(userMap);
 
