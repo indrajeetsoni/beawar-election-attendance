@@ -857,14 +857,11 @@
         // DATA PERSISTENCE
         function loadLocalData() {
             const stored = localStorage.getItem("beawar_election_emp_data");
-            if (stored) {
+            if (stored !== null) {
                 try {
                     employees = JSON.parse(stored);
-                    if (!employees || employees.length === 0) {
-                        employees = [...SAMPLE_BEAWAR_DATA];
-                    }
                 } catch (e) {
-                    employees = [...SAMPLE_BEAWAR_DATA];
+                    employees = [];
                 }
             } else {
                 employees = [...SAMPLE_BEAWAR_DATA];
@@ -885,17 +882,34 @@
 
         function clearDatabase() {
             Swal.fire({
-                title: 'Clear All Database Records?',
-                text: 'This will remove all current employees from the database so you can upload your new Excel sheet.',
+                title: 'Clear All App & Google Sheet Data?',
+                text: 'This will wipe all employee records & attendance data from both this app and your connected Google Sheet.',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'Yes, Clear All',
+                confirmButtonText: 'Yes, Clear Everything',
                 confirmButtonColor: '#dc2626'
             }).then((res) => {
                 if (res.isConfirmed) {
                     employees = [];
-                    saveLocalData();
-                    Swal.fire({ icon: 'info', title: 'Database Cleared', text: 'All employee records cleared. Please upload your Excel sheet now.' });
+                    localStorage.setItem("beawar_election_emp_data", JSON.stringify([]));
+                    
+                    // Reset staff users to default
+                    staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
+                    localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+
+                    // Wipe Google Sheet if connected
+                    const url = localStorage.getItem("beawar_google_sheet_url");
+                    if (url && !url.includes("docs.google.com/spreadsheets")) {
+                        fetch(url, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ action: "CLEAR_ALL_DATA" })
+                        }).catch(err => console.error("Cloud wipe error:", err));
+                    }
+
+                    renderAllViews();
+                    Swal.fire({ icon: 'success', title: 'Database Wiped', text: 'All employee records & attendance data cleared from app and Google Sheet.' });
                 }
             });
         }
