@@ -396,13 +396,17 @@
                         <input type="url" id="firebaseDbUrl" placeholder="https://beawar-election-default-rtdb.firebaseio.com/attendance" class="w-full px-3 py-2 border rounded-lg text-xs font-mono">
                     </div>
 
-                    <div class="flex space-x-3">
-                        <button onclick="saveCloudSettings()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow">
-                            Save Cloud Settings
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="saveCloudSettings()" class="px-4 py-2.5 bg-slate-700 hover:bg-slate-800 text-white font-bold text-xs rounded-lg shadow">
+                            <i class="fas fa-save mr-1"></i>Save Webhook URL
                         </button>
-                        <button onclick="syncAllToCloud()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow flex items-center space-x-1">
-                            <i class="fas fa-sync-alt"></i>
-                            <span>Sync All Local Data Now</span>
+                        <button onclick="fetchFromCloud(false)" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow flex items-center space-x-1">
+                            <i class="fas fa-cloud-download-alt mr-1"></i>
+                            <span>Pull Data from Google Sheet</span>
+                        </button>
+                        <button onclick="syncAllToCloud()" class="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-lg shadow flex items-center space-x-1">
+                            <i class="fas fa-cloud-upload-alt mr-1"></i>
+                            <span>Push Local Data to Google Sheet</span>
                         </button>
                     </div>
                 </div>
@@ -624,6 +628,14 @@
             loadLocalData();
             loadStaffUsers();
             initDragAndDrop();
+
+            // Load saved cloud webhook URL and fetch online records
+            const savedUrl = localStorage.getItem("beawar_google_sheet_url");
+            if (savedUrl) {
+                const el = document.getElementById("googleSheetUrl");
+                if (el) el.value = savedUrl;
+                fetchFromCloud(true); // Silent background fetch
+            }
         });
 
         function updateClock() {
@@ -846,7 +858,14 @@
         function loadLocalData() {
             const stored = localStorage.getItem("beawar_election_emp_data");
             if (stored) {
-                try { employees = JSON.parse(stored); } catch (e) { employees = [...SAMPLE_BEAWAR_DATA]; }
+                try {
+                    employees = JSON.parse(stored);
+                    if (!employees || employees.length === 0) {
+                        employees = [...SAMPLE_BEAWAR_DATA];
+                    }
+                } catch (e) {
+                    employees = [...SAMPLE_BEAWAR_DATA];
+                }
             } else {
                 employees = [...SAMPLE_BEAWAR_DATA];
                 saveLocalData();
@@ -1425,6 +1444,66 @@
                     markedBy: currentUser ? currentUser.label : 'Trainer'
                 })
             }).catch(err => console.error("Cloud push failed:", err));
+        }
+
+        function fetchFromCloud(silent = false) {
+            const url = (document.getElementById("googleSheetUrl") ? document.getElementById("googleSheetUrl").value.trim() : "") || localStorage.getItem("beawar_google_sheet_url");
+            
+            if (!url || url.includes("docs.google.com/spreadsheets")) {
+                if (!silent) showGoogleSheetHelpModal();
+                return;
+            }
+
+            if (!silent) {
+                Swal.fire({
+                    title: 'Fetching Data from Google Sheet...',
+                    text: 'Connecting to online database...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+            }
+
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === "SUCCESS") {
+                        let empMsg = "";
+                        let userMsg = "";
+
+                        if (data.employees && data.employees.length > 0) {
+                            employees = data.employees;
+                            saveLocalData();
+                            empMsg = `${data.employees.length} employee records`;
+                        }
+                        if (data.users && data.users.length > 0) {
+                            const fetchedUsers = data.users;
+                            const hasAdmin = fetchedUsers.some(u => u.username.toLowerCase() === 'admin');
+                            if (!hasAdmin) {
+                                staffUsers = [DEFAULT_STAFF_ACCOUNTS[0], ...fetchedUsers];
+                            } else {
+                                staffUsers = fetchedUsers;
+                            }
+                            localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+                            renderStaffTable();
+                            userMsg = `${data.users.length} user accounts`;
+                        }
+
+                        renderAllViews();
+
+                        if (!silent) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Cloud Data Loaded!',
+                                text: `Successfully pulled ${empMsg || '0 records'} and ${userMsg || '0 users'} from Google Sheet!`
+                            });
+                        }
+                    } else {
+                        if (!silent) Swal.fire({ icon: 'error', title: 'Fetch Error', text: data.message || 'Could not parse response from Google Sheet.' });
+                    }
+                })
+                .catch(err => {
+                    if (!silent) Swal.fire({ icon: 'error', title: 'Sync Failed', text: 'Unable to connect to Google Sheet Webhook. Ensure Apps Script is deployed as Web App with "Anyone" access.' });
+                });
         }
 
         function syncAllToCloud() {
