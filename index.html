@@ -122,6 +122,10 @@
                     <span id="liveDate" class="text-slate-400">Loading...</span>
                 </div>
                 <div class="h-8 w-px bg-slate-700 hidden sm:block"></div>
+                <div class="bg-emerald-950/80 px-2.5 py-1.5 rounded-lg border border-emerald-500/40 flex items-center space-x-1.5 text-[11px]">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span class="font-bold text-emerald-300">Auto-Sync Active (Google Sheet)</span>
+                </div>
                 <div class="bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center space-x-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                     <span id="activeUserBadge" class="font-semibold text-slate-200">Admin</span>
@@ -744,12 +748,12 @@
             Swal.fire({ icon: 'success', title: 'Welcome!', text: `Logged in as ${currentUser.name}`, timer: 1500, showConfirmButton: false });
         }
 
-        // Auto-sync background polling (every 15 seconds)
+        // Real-time auto-sync background polling (every 5 seconds)
         setInterval(() => {
             if (currentUser && localStorage.getItem("beawar_google_sheet_url")) {
                 fetchFromCloud(true);
             }
-        }, 15000);
+        }, 5000);
 
         function quickLogin(role) {
             document.getElementById("loginRole").value = role;
@@ -1516,7 +1520,11 @@
                             employees = data.employees;
                             saveLocalData();
                             empMsg = `${data.employees.length} employee records`;
+                        } else if (employees.length > 0) {
+                            // If Google Sheet is empty but local app has data, push to Google Sheet automatically!
+                            syncAllToCloud(true);
                         }
+
                         if (data.users && data.users.length > 0) {
                             const fetchedUsers = data.users;
                             const hasAdmin = fetchedUsers.some(u => u.username.toLowerCase() === 'admin');
@@ -1528,6 +1536,8 @@
                             localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
                             renderStaffTable();
                             userMsg = `${data.users.length} user accounts`;
+                        } else if (staffUsers.length > 0) {
+                            pushUsersToCloud();
                         }
 
                         renderAllViews();
