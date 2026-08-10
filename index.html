@@ -737,8 +737,19 @@
             }
 
             renderAllViews();
+            
+            // Auto fetch latest data from Google Sheet on login
+            fetchFromCloud(true);
+
             Swal.fire({ icon: 'success', title: 'Welcome!', text: `Logged in as ${currentUser.name}`, timer: 1500, showConfirmButton: false });
         }
+
+        // Auto-sync background polling (every 15 seconds)
+        setInterval(() => {
+            if (currentUser && localStorage.getItem("beawar_google_sheet_url")) {
+                fetchFromCloud(true);
+            }
+        }, 15000);
 
         function quickLogin(role) {
             document.getElementById("loginRole").value = role;
@@ -1468,8 +1479,10 @@
                     batch: emp.Training_Batch,
                     status: emp.Status,
                     reason: emp.Absence_Reason,
-                    markedBy: currentUser ? currentUser.label : 'Trainer'
+                    markedBy: currentUser ? (currentUser.name || currentUser.username) : 'Attendance Officer'
                 })
+            }).then(() => {
+                setTimeout(() => { fetchFromCloud(true); }, 1500);
             }).catch(err => console.error("Cloud push failed:", err));
         }
 
