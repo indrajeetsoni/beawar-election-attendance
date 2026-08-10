@@ -1392,12 +1392,25 @@
         // CLOUD SYNC LOGIC
         function saveCloudSettings() {
             const url = document.getElementById("googleSheetUrl").value.trim();
+            if (!url) {
+                Swal.fire({ icon: 'warning', title: 'Empty URL', text: 'Please paste your deployed Google Apps Script Webhook URL.' });
+                return;
+            }
             if (url.includes("docs.google.com/spreadsheets")) {
                 showGoogleSheetHelpModal();
                 return;
             }
             localStorage.setItem("beawar_google_sheet_url", url);
-            Swal.fire({ icon: 'success', title: 'Settings Saved', text: 'Cloud API Webhook URL saved successfully.' });
+            Swal.fire({
+                icon: 'success',
+                title: 'Webhook URL Saved!',
+                text: 'Testing connection and pulling data from Google Sheet...',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            setTimeout(() => {
+                fetchFromCloud(false);
+            }, 1200);
         }
 
         function showGoogleSheetHelpModal() {
