@@ -79,12 +79,12 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username / यूजरनेम</label>
-                    <input type="text" id="loginUser" value="admin" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
+                    <input type="text" id="loginUser" placeholder="Enter your username" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
                 </div>
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Passcode / पासवर्ड</label>
-                    <input type="password" id="loginPass" value="beawar2026" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
+                    <input type="password" id="loginPass" placeholder="Enter your passcode" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm">
                 </div>
 
                 <button type="submit" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg transition shadow-md flex items-center justify-center space-x-2">
@@ -632,13 +632,32 @@
         }
 
         function loadStaffUsers() {
+            const CURRENT_VERSION = "v2.0";
+            const savedVersion = localStorage.getItem("beawar_staff_version");
             const stored = localStorage.getItem("beawar_staff_credentials");
-            if (stored) {
-                try { staffUsers = JSON.parse(stored); } catch (e) { staffUsers = [...DEFAULT_STAFF_ACCOUNTS]; }
-            } else {
+
+            // Force reset if version mismatch OR corrupted OR no admin account found
+            if (!stored || savedVersion !== CURRENT_VERSION) {
                 staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
-                saveStaffUsers();
+                localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+                localStorage.setItem("beawar_staff_version", CURRENT_VERSION);
+                return;
             }
+
+            try {
+                const parsed = JSON.parse(stored);
+                const hasAdmin = parsed.some(u => u.username === 'admin' && u.password === 'beawar2026');
+                if (!hasAdmin) {
+                    // Re-inject admin if missing
+                    const filteredStaff = parsed.filter(u => u.username !== 'admin');
+                    staffUsers = [DEFAULT_STAFF_ACCOUNTS[0], ...filteredStaff];
+                } else {
+                    staffUsers = parsed;
+                }
+            } catch (e) {
+                staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
+            }
+            localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
         }
 
         function saveStaffUsers() {
@@ -653,7 +672,11 @@
             const pInput = document.getElementById("loginPass").value.trim();
             const selectedRole = document.getElementById("loginRole").value;
 
-            const matchedUser = staffUsers.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+            // First try staffUsers, then fall back to DEFAULT_STAFF_ACCOUNTS to handle stale localStorage
+            let matchedUser = staffUsers.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+            if (!matchedUser) {
+                matchedUser = DEFAULT_STAFF_ACCOUNTS.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
+            }
 
             if (!matchedUser) {
                 Swal.fire({ icon: 'error', title: 'Login Failed', text: 'Invalid Username or Passcode. Please check your credentials.' });
