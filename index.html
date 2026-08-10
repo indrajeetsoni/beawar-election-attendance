@@ -618,6 +618,12 @@
         let reasonsChartInstance = null;
 
         const CURRENT_VERSION = "v2.2";
+        const DEFAULT_GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbylFwgi-AMCUbl0vrOF0HdksBsWXImVxjvjNMUqmKx-kmW4uwzxYh5s757ors1yffuqZw/exec";
+
+        function getCloudWebhookUrl() {
+            return localStorage.getItem("beawar_google_sheet_url") || DEFAULT_GOOGLE_SHEET_URL;
+        }
+
         const DEFAULT_STAFF_ACCOUNTS = [
             { name: "District Nodal Officer (Admin)", username: "admin", password: "beawar2026", role: "admin", assignedTehsil: "All Tehsils" },
             { name: "Suresh Kumar (Attendance Officer Beawar)", username: "trainer_beawar", password: "train123", role: "staff", assignedTehsil: "Beawar" },
@@ -633,13 +639,12 @@
             loadStaffUsers();
             initDragAndDrop();
 
-            // Load saved cloud webhook URL and fetch online records
-            const savedUrl = localStorage.getItem("beawar_google_sheet_url");
-            if (savedUrl) {
-                const el = document.getElementById("googleSheetUrl");
-                if (el) el.value = savedUrl;
-                fetchFromCloud(true); // Silent background fetch
-            }
+            // Populate webhook URL input box and trigger silent fetch from Google Sheet
+            const activeUrl = getCloudWebhookUrl();
+            const el = document.getElementById("googleSheetUrl");
+            if (el) el.value = activeUrl;
+            
+            fetchFromCloud(true); // Silent background fetch for any user
         });
 
         function updateClock() {
@@ -683,7 +688,7 @@
         }
 
         function pushUsersToCloud() {
-            const url = localStorage.getItem("beawar_google_sheet_url");
+            const url = getCloudWebhookUrl();
             if (!url || url.includes("docs.google.com/spreadsheets")) return;
 
             fetch(url, {
@@ -750,7 +755,7 @@
 
         // Real-time auto-sync background polling (every 5 seconds)
         setInterval(() => {
-            if (currentUser && localStorage.getItem("beawar_google_sheet_url")) {
+            if (currentUser && getCloudWebhookUrl()) {
                 fetchFromCloud(true);
             }
         }, 5000);
@@ -1467,7 +1472,7 @@
         }
 
         function pushToCloudSingle(emp) {
-            const url = localStorage.getItem("beawar_google_sheet_url");
+            const url = getCloudWebhookUrl();
             if (!url || url.includes("docs.google.com/spreadsheets")) return;
 
             fetch(url, {
@@ -1493,7 +1498,7 @@
         }
 
         function fetchFromCloud(silent = false) {
-            const url = (document.getElementById("googleSheetUrl") ? document.getElementById("googleSheetUrl").value.trim() : "") || localStorage.getItem("beawar_google_sheet_url");
+            const url = getCloudWebhookUrl();
             
             if (!url || url.includes("docs.google.com/spreadsheets")) {
                 if (!silent) showGoogleSheetHelpModal();
@@ -1559,7 +1564,7 @@
         }
 
         function syncAllToCloud(silent = false) {
-            const url = (document.getElementById("googleSheetUrl") ? document.getElementById("googleSheetUrl").value.trim() : "") || localStorage.getItem("beawar_google_sheet_url");
+            const url = getCloudWebhookUrl();
             
             if (!url) {
                 if (!silent) Swal.fire({ icon: 'warning', title: 'Missing Webhook URL', text: 'Please enter your Google Sheet Webhook URL in Cloud Sync tab.' });
