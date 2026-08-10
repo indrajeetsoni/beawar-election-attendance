@@ -15,7 +15,38 @@
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+
+    // 1. SYNC USER ACCOUNTS TO 'UserTracker' SHEET
+    if (data.action === "SYNC_USERS") {
+      var userSheet = ss.getSheetByName("UserTracker");
+      if (!userSheet) {
+        userSheet = ss.insertSheet("UserTracker");
+      }
+      userSheet.clearContents();
+      userSheet.appendRow([
+        "Last Updated", "Full Name", "Username", "Passcode / Password", "Role", "Assigned Tehsil", "Status"
+      ]);
+
+      var users = data.users || [];
+      for (var u = 0; u < users.length; u++) {
+        var user = users[u];
+        userSheet.appendRow([
+          timestamp,
+          user.name,
+          user.username,
+          user.password,
+          user.role,
+          user.assignedTehsil || "All Tehsils",
+          user.status || "Active"
+        ]);
+      }
+      return responseJSON({ status: "SUCCESS", message: users.length + " users synced to UserTracker sheet" });
+    }
+
+    // 2. ATTENDANCE DATA SYNC TO MAIN SHEET
+    var sheet = ss.getSheets()[0]; // Main attendance sheet
     
     // Check if header exists, if not create headers
     if (sheet.getLastRow() === 0) {
@@ -25,8 +56,6 @@ function doPost(e) {
         "Absence Reason", "Remarks", "Marked By"
       ]);
     }
-
-    var timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
     if (data.action === "MARK_ATTENDANCE") {
       sheet.appendRow([
@@ -41,7 +70,7 @@ function doPost(e) {
         data.status,
         data.reason || "",
         data.remarks || "",
-        data.markedBy || "Trainer"
+        data.markedBy || "Attendance Officer"
       ]);
       return responseJSON({ status: "SUCCESS", message: "Attendance synced to Google Sheet" });
     }
@@ -52,7 +81,7 @@ function doPost(e) {
         var r = rows[i];
         sheet.appendRow([
           timestamp, r.empId, r.name, r.designation, r.department,
-          r.tehsil, r.mobile, r.batch, r.status, r.reason || "", r.remarks || "", r.markedBy || "Trainer"
+          r.tehsil, r.mobile, r.batch, r.status, r.reason || "", r.remarks || "", r.markedBy || "Attendance Officer"
         ]);
       }
       return responseJSON({ status: "SUCCESS", message: rows.length + " records synced to Google Sheet" });
