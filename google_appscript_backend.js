@@ -1,17 +1,100 @@
 /**
  * GOOGLE APPS SCRIPT FOR BEAWAR DISTRICT ELECTION ATTENDANCE PORTAL
+ * 
  * Instructions:
- * 1. Open your Google Sheet where employee data and attendance will be stored.
+ * 1. Open your Google Sheet (AttendanceTracker).
  * 2. Click Extensions > Apps Script.
- * 3. Delete any code in Code.gs and paste this entire code.
- * 4. Click 'Deploy' > 'New Deployment'.
- * 5. Select type: 'Web app'.
+ * 3. Replace all existing code with this updated code.
+ * 4. Click 'Deploy' > 'New Deployment' (or 'Manage Deployments' > Edit > New Version).
+ * 5. Set 'Select type': 'Web app'.
  * 6. Set 'Execute as': 'Me'.
  * 7. Set 'Who has access': 'Anyone'.
- * 8. Click 'Deploy', grant permissions, and copy the Web App URL!
- * 9. Paste the Web App URL into the 'Cloud Sync' settings of your Beawar Attendance App.
+ * 8. Click 'Deploy', authorize, and copy the Web App URL!
  */
 
+// Helper to find existing sheet tab case-insensitively or create it
+function getOrCreateSheet(ss, targetName) {
+  var sheets = ss.getSheets();
+  for (var i = 0; i < sheets.length; i++) {
+    var sName = sheets[i].getName().trim().toLowerCase();
+    var tName = targetName.trim().toLowerCase();
+    if (sName === tName || sName.replace(/\s+/g, '') === tName.replace(/\s+/g, '')) {
+      return sheets[i];
+    }
+  }
+  return ss.insertSheet(targetName);
+}
+
+// GET REQUEST: FETCH ALL EMPLOYEES AND USERS FROM GOOGLE SHEET TO APP
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    
+    // 1. GET USERS FROM 'UserTracker' SHEET
+    var userSheet = getOrCreateSheet(ss, "UserTracker");
+    var userRows = userSheet.getDataRange().getValues();
+    var users = [];
+    if (userRows && userRows.length > 1) {
+      for (var i = 1; i < userRows.length; i++) {
+        var uRow = userRows[i];
+        if (uRow[1] || uRow[2]) {
+          users.push({
+            name: String(uRow[1] || ''),
+            username: String(uRow[2] || ''),
+            password: String(uRow[3] || ''),
+            role: String(uRow[4] || 'staff').toLowerCase().includes('admin') ? 'admin' : 'staff',
+            assignedTehsil: String(uRow[5] || 'All Tehsils'),
+            status: String(uRow[6] || 'Active')
+          });
+        }
+      }
+    }
+
+    // 2. GET EMPLOYEES & ATTENDANCE FROM MAIN ATTENDANCE SHEET
+    var empSheet = ss.getSheets()[0]; // First sheet (AttendanceTracker)
+    var empRows = empSheet.getDataRange().getValues();
+    var empMap = {};
+    
+    if (empRows && empRows.length > 1) {
+      for (var j = 1; j < empRows.length; j++) {
+        var row = empRows[j];
+        var empId = String(row[1] || '').trim();
+        if (!empId || empId === "Emp ID" || empId === "Timestamp") continue;
+        
+        // Latest row in sheet overwrites previous status for the same Emp ID
+        empMap[empId] = {
+          Emp_ID: empId,
+          Name: String(row[2] || ''),
+          Designation: String(row[3] || ''),
+          Department: String(row[4] || ''),
+          Tehsil_Block: String(row[5] || 'Beawar'),
+          Mobile_No: String(row[6] || ''),
+          Training_Batch: String(row[7] || 'Batch 1 (Hall A)'),
+          Status: String(row[8] || 'Pending'),
+          Absence_Reason: String(row[9] || ''),
+          Remarks: String(row[10] || ''),
+          MarkedBy: String(row[11] || '')
+        };
+      }
+    }
+
+    var employeeList = [];
+    for (var id in empMap) {
+      employeeList.push(empMap[id]);
+    }
+
+    return responseJSON({
+      status: "SUCCESS",
+      employees: employeeList,
+      users: users,
+      count: employeeList.length
+    });
+  } catch (err) {
+    return responseJSON({ status: "ERROR", message: err.toString() });
+  }
+}
+
+// POST REQUEST: WRITE / SYNC ATTENDANCE OR USER DETAILS FROM APP TO GOOGLE SHEET
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
@@ -20,10 +103,7 @@ function doPost(e) {
 
     // 1. SYNC USER ACCOUNTS TO 'UserTracker' SHEET
     if (data.action === "SYNC_USERS") {
-      var userSheet = ss.getSheetByName("UserTracker");
-      if (!userSheet) {
-        userSheet = ss.insertSheet("UserTracker");
-      }
+      var userSheet = getOrCreateSheet(ss, "UserTracker");
       userSheet.clearContents();
       userSheet.appendRow([
         "Last Updated", "Full Name", "Username", "Passcode / Password", "Role", "Assigned Tehsil", "Status"
@@ -46,9 +126,9 @@ function doPost(e) {
     }
 
     // 2. ATTENDANCE DATA SYNC TO MAIN SHEET
-    var sheet = ss.getSheets()[0]; // Main attendance sheet
+    var sheet = ss.getSheets()[0];
     
-    // Check if header exists, if not create headers
+    // Ensure header row exists
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
         "Timestamp", "Emp ID", "Name", "Designation", "Department", 
@@ -91,10 +171,6 @@ function doPost(e) {
   } catch (err) {
     return responseJSON({ status: "ERROR", message: err.toString() });
   }
-}
-
-function doGet(e) {
-  return responseJSON({ status: "ACTIVE", message: "Beawar Election Attendance Google Sync Engine is running." });
 }
 
 function responseJSON(obj) {
