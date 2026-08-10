@@ -175,12 +175,31 @@ function doPost(e) {
     }
 
     if (data.action === "BATCH_SYNC") {
-      var rows = data.records;
+      if (data.clearFirst) {
+        sheet.clearContents();
+        sheet.appendRow([
+          "Timestamp", "Emp ID", "Name", "Designation", "Department", 
+          "Tehsil", "Mobile", "Training Batch", "Attendance Status", 
+          "Absence Reason", "Remarks", "Marked By"
+        ]);
+      }
+
+      var rows = data.records || [];
       for (var i = 0; i < rows.length; i++) {
         var r = rows[i];
         sheet.appendRow([
-          timestamp, r.empId, r.name, r.designation, r.department,
-          r.tehsil, r.mobile, r.batch, r.status, r.reason || "", r.remarks || "", r.markedBy || "Attendance Officer"
+          timestamp,
+          r.empId || r.Emp_ID || "",
+          r.name || r.Name || "",
+          r.designation || r.Designation || "",
+          r.department || r.Department || "",
+          r.tehsil || r.Tehsil_Block || "",
+          r.mobile || r.Mobile_No || "",
+          r.batch || r.Training_Batch || "",
+          r.status || r.Status || "Pending",
+          r.reason || r.Absence_Reason || "",
+          r.remarks || r.Remarks || "",
+          r.markedBy || "Attendance Officer"
         ]);
       }
       return responseJSON({ status: "SUCCESS", message: rows.length + " records synced to Google Sheet" });
