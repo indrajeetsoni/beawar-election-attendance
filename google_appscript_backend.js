@@ -101,7 +101,26 @@ function doPost(e) {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var timestamp = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
-    // 1. SYNC USER ACCOUNTS TO 'UserTracker' SHEET
+    // 1. CLEAR ALL DATA ACTION
+    if (data.action === "CLEAR_ALL_DATA") {
+      var mainSheet = ss.getSheets()[0];
+      mainSheet.clearContents();
+      mainSheet.appendRow([
+        "Timestamp", "Emp ID", "Name", "Designation", "Department", 
+        "Tehsil", "Mobile", "Training Batch", "Attendance Status", 
+        "Absence Reason", "Remarks", "Marked By"
+      ]);
+
+      var uSheet = getOrCreateSheet(ss, "UserTracker");
+      uSheet.clearContents();
+      uSheet.appendRow([
+        "Last Updated", "Full Name", "Username", "Passcode / Password", "Role", "Assigned Tehsil", "Status"
+      ]);
+
+      return responseJSON({ status: "SUCCESS", message: "All employee and user data wiped from Google Sheet." });
+    }
+
+    // 2. SYNC USER ACCOUNTS TO 'UserTracker' SHEET
     if (data.action === "SYNC_USERS") {
       var userSheet = getOrCreateSheet(ss, "UserTracker");
       userSheet.clearContents();
@@ -125,7 +144,7 @@ function doPost(e) {
       return responseJSON({ status: "SUCCESS", message: users.length + " users synced to UserTracker sheet" });
     }
 
-    // 2. ATTENDANCE DATA SYNC TO MAIN SHEET
+    // 3. ATTENDANCE DATA SYNC TO MAIN SHEET
     var sheet = ss.getSheets()[0];
     
     // Ensure header row exists
