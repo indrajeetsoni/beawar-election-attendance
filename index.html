@@ -710,23 +710,65 @@
         }
 
         // AUTHENTICATION & ROLE MANAGEMENT
-        function handleLogin(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const uInput = document.getElementById("loginUser").value.trim().toLowerCase();
             const pInput = document.getElementById("loginPass").value.trim();
 
-            // Refresh from local storage to ensure newly added accounts are active
+            if (!uInput || !pInput) return;
+
+            // Show authentication progress indicator
+            Swal.fire({
+                title: 'Authenticating...',
+                text: 'Verifying credentials with Google Sheet UserTracker...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
             loadStaffUsers();
 
-            let matchedUser = staffUsers.find(u => (u.username || '').trim().toLowerCase() === uInput && String(u.password || '').trim() === pInput);
-            if (!matchedUser) {
-                matchedUser = DEFAULT_STAFF_ACCOUNTS.find(u => (u.username || '').trim().toLowerCase() === uInput && String(u.password || '').trim() === pInput);
+            // Live fetch from Google Sheet UserTracker
+            let liveUsers = [];
+            const url = getCloudWebhookUrl();
+            if (url && !url.includes("docs.google.com/spreadsheets")) {
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data && data.status === "SUCCESS") {
+                        if (data.users && data.users.length > 0) {
+                            liveUsers = data.users;
+                        }
+                        if (data.employees && data.employees.length > 0) {
+                            employees = data.employees;
+                            saveLocalData();
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Live online authentication fetch failed, falling back to local credentials:", err);
+                }
             }
+
+            // Combine default, local, and live Google Sheet UserTracker accounts
+            const userMap = {};
+            DEFAULT_STAFF_ACCOUNTS.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
+            staffUsers.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
+            liveUsers.forEach(u => { if (u.username) userMap[u.username.trim().toLowerCase()] = u; });
+
+            const allValidUsers = Object.values(userMap);
+
+            let matchedUser = allValidUsers.find(u => 
+                (u.username || '').trim().toLowerCase() === uInput && 
+                String(u.password || '').trim() === pInput
+            );
 
             if (!matchedUser) {
                 Swal.fire({ icon: 'error', title: 'Login Failed', text: 'Invalid Username or Passcode. Please check your credentials.' });
                 return;
             }
+
+            // Update local staffUsers cache with merged accounts
+            staffUsers = allValidUsers;
+            localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
 
             currentUser = matchedUser;
             document.getElementById("loginScreen").classList.add("hidden");
@@ -746,10 +788,6 @@
             }
 
             renderAllViews();
-            
-            // Auto fetch latest data from Google Sheet on login
-            fetchFromCloud(true);
-
             Swal.fire({ icon: 'success', title: 'Welcome!', text: `Logged in as ${currentUser.name}`, timer: 1500, showConfirmButton: false });
         }
 
