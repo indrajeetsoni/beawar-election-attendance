@@ -73,7 +73,7 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Role / पद चुनें</label>
                     <select id="loginRole" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm font-semibold">
                         <option value="admin">District Nodal Officer (Admin / नोडल अधिकारी)</option>
-                        <option value="trainer">Master Trainer (मास्टर ट्रेनर)</option>
+                        <option value="staff">Attendance Officer (उपस्थिति अधिकारी)</option>
                     </select>
                 </div>
 
@@ -96,7 +96,7 @@
                     <p class="text-xs text-slate-500 font-semibold mb-2">Quick Demo Access / त्वरित लॉगिन:</p>
                     <div class="grid grid-cols-2 gap-2 text-xs">
                         <button type="button" onclick="quickLogin('admin')" class="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border font-medium">Nodal Officer</button>
-                        <button type="button" onclick="quickLogin('trainer')" class="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border font-medium">Master Trainer</button>
+                        <button type="button" onclick="quickLogin('staff')" class="py-1.5 px-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded border font-medium">Attendance Officer</button>
                     </div>
                 </div>
             </form>
@@ -153,7 +153,7 @@
                 </button>
                 <button onclick="switchTab('staff')" id="tab-staff" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
                     <i class="fas fa-users-cog text-amber-400"></i>
-                    <span>MANAGE STAFF LOGINS</span>
+                    <span>ATTENDANCE OFFICERS</span>
                 </button>
                 <button onclick="switchTab('reports')" id="tab-reports" class="tab-btn admin-only py-2.5 px-4 text-xs font-bold flex items-center space-x-2 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
                     <i class="fas fa-file-invoice"></i>
@@ -466,19 +466,19 @@
             </div>
         </section>
 
-        <!-- 7. MANAGE STAFF LOGINS VIEW (ADMIN ONLY) -->
+        <!-- 7. MANAGE ATTENDANCE OFFICERS VIEW (ADMIN ONLY) -->
         <section id="view-staff" class="hidden space-y-6">
             <div class="glass-panel p-6 rounded-2xl shadow-sm space-y-6">
                 <div class="border-b pb-4 flex justify-between items-center flex-wrap gap-2">
                     <div>
                         <h3 class="text-base font-bold text-slate-800 uppercase flex items-center space-x-2">
                             <i class="fas fa-users-cog text-amber-600"></i>
-                            <span>Staff / Master Trainer Credentials Manager</span>
+                            <span>Attendance Officer Credentials Manager</span>
                         </h3>
-                        <p class="text-xs text-slate-500 mt-1">Create and manage login accounts for staff/trainers capturing attendance in halls.</p>
+                        <p class="text-xs text-slate-500 mt-1">Create and manage login accounts for Attendance Officers capturing attendance in halls.</p>
                     </div>
                     <button onclick="openAddStaffModal()" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow flex items-center space-x-1 transition">
-                        <i class="fas fa-user-plus mr-1"></i>Create New Staff Login
+                        <i class="fas fa-user-plus mr-1"></i>Create New Attendance Officer
                     </button>
                 </div>
 
@@ -486,7 +486,7 @@
                     <table class="w-full text-left text-xs border-collapse">
                         <thead class="bg-slate-900 text-slate-200 uppercase font-bold">
                             <tr>
-                                <th class="p-3">Staff Full Name</th>
+                                <th class="p-3">Attendance Officer Full Name</th>
                                 <th class="p-3">Username</th>
                                 <th class="p-3">Assigned Tehsil / Hall</th>
                                 <th class="p-3">Passcode / Password</th>
@@ -504,20 +504,20 @@
 
     </main>
 
-    <!-- CREATE / EDIT STAFF MODAL -->
+    <!-- CREATE / EDIT ATTENDANCE OFFICER MODAL -->
     <div id="staffModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 bg-opacity-70 p-4 hidden">
         <div class="max-w-md w-full bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-300">
             <div class="bg-slate-900 text-amber-400 p-4 flex justify-between items-center border-b border-slate-800">
                 <h3 class="text-sm font-bold uppercase flex items-center">
-                    <i class="fas fa-user-plus mr-2"></i>Create Staff Login Credentials
+                    <i class="fas fa-user-plus mr-2"></i>Create Attendance Officer Login Credentials
                 </h3>
                 <button onclick="closeStaffModal()" class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
             </div>
 
             <form onsubmit="submitStaffUser(event)" class="p-5 space-y-4 text-xs">
                 <div>
-                    <label class="block font-bold text-slate-700 uppercase mb-1">Staff Full Name / पूरा नाम *</label>
-                    <input type="text" id="staffFullName" placeholder="e.g. Ramesh Chandra (Trainer Hall A)" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Attendance Officer Full Name / पूरा नाम *</label>
+                    <input type="text" id="staffFullName" placeholder="e.g. Ramesh Chandra (Attendance Officer Hall A)" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500">
                 </div>
 
                 <div>
@@ -536,7 +536,7 @@
 
                 <div>
                     <label class="block font-bold text-slate-700 uppercase mb-1">Login Username / यूजरनेम *</label>
-                    <input type="text" id="staffUsername" placeholder="e.g. trainer_beawar" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
+                    <input type="text" id="staffUsername" placeholder="e.g. officer_beawar" required class="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 font-mono">
                 </div>
 
                 <div>
@@ -546,7 +546,7 @@
 
                 <div class="flex justify-end space-x-2 pt-2 border-t">
                     <button type="button" onclick="closeStaffModal()" class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shadow">SAVE STAFF ACCOUNT</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold shadow">SAVE ATTENDANCE OFFICER</button>
                 </div>
             </form>
         </div>
@@ -609,11 +609,12 @@
         let html5QrScanner = null;
         let reasonsChartInstance = null;
 
+        const CURRENT_VERSION = "v2.2";
         const DEFAULT_STAFF_ACCOUNTS = [
             { name: "District Nodal Officer (Admin)", username: "admin", password: "beawar2026", role: "admin", assignedTehsil: "All Tehsils" },
-            { name: "Suresh Kumar (Trainer Beawar)", username: "trainer_beawar", password: "train123", role: "staff", assignedTehsil: "Beawar" },
-            { name: "Ramesh Chandra (Trainer Masuda)", username: "trainer_masuda", password: "train123", role: "staff", assignedTehsil: "Masuda" },
-            { name: "Mahendra Singh (Trainer Jaitaran)", username: "trainer_jaitaran", password: "train123", role: "staff", assignedTehsil: "Jaitaran" }
+            { name: "Suresh Kumar (Attendance Officer Beawar)", username: "trainer_beawar", password: "train123", role: "staff", assignedTehsil: "Beawar" },
+            { name: "Ramesh Chandra (Attendance Officer Masuda)", username: "trainer_masuda", password: "train123", role: "staff", assignedTehsil: "Masuda" },
+            { name: "Mahendra Singh (Attendance Officer Jaitaran)", username: "trainer_jaitaran", password: "train123", role: "staff", assignedTehsil: "Jaitaran" }
         ];
 
         // INIT APPLICATION
@@ -632,11 +633,9 @@
         }
 
         function loadStaffUsers() {
-            const CURRENT_VERSION = "v2.0";
             const savedVersion = localStorage.getItem("beawar_staff_version");
             const stored = localStorage.getItem("beawar_staff_credentials");
 
-            // Force reset if version mismatch OR corrupted OR no admin account found
             if (!stored || savedVersion !== CURRENT_VERSION) {
                 staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
                 localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
@@ -646,10 +645,9 @@
 
             try {
                 const parsed = JSON.parse(stored);
-                const hasAdmin = parsed.some(u => u.username === 'admin' && u.password === 'beawar2026');
+                const hasAdmin = parsed.some(u => u.username.toLowerCase() === 'admin');
                 if (!hasAdmin) {
-                    // Re-inject admin if missing
-                    const filteredStaff = parsed.filter(u => u.username !== 'admin');
+                    const filteredStaff = parsed.filter(u => u.username.toLowerCase() !== 'admin');
                     staffUsers = [DEFAULT_STAFF_ACCOUNTS[0], ...filteredStaff];
                 } else {
                     staffUsers = parsed;
@@ -658,11 +656,36 @@
                 staffUsers = [...DEFAULT_STAFF_ACCOUNTS];
             }
             localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+            localStorage.setItem("beawar_staff_version", CURRENT_VERSION);
         }
 
         function saveStaffUsers() {
             localStorage.setItem("beawar_staff_credentials", JSON.stringify(staffUsers));
+            localStorage.setItem("beawar_staff_version", CURRENT_VERSION);
             renderStaffTable();
+            pushUsersToCloud();
+        }
+
+        function pushUsersToCloud() {
+            const url = localStorage.getItem("beawar_google_sheet_url");
+            if (!url || url.includes("docs.google.com/spreadsheets")) return;
+
+            fetch(url, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    action: "SYNC_USERS",
+                    users: staffUsers.map(u => ({
+                        name: u.name,
+                        username: u.username,
+                        password: u.password,
+                        role: u.role === 'admin' ? 'District Nodal Officer (Admin)' : 'Attendance Officer',
+                        assignedTehsil: u.assignedTehsil || 'All Tehsils',
+                        status: 'Active'
+                    }))
+                })
+            }).catch(err => console.error("User cloud sync failed:", err));
         }
 
         // AUTHENTICATION & ROLE MANAGEMENT
@@ -670,9 +693,10 @@
             e.preventDefault();
             const uInput = document.getElementById("loginUser").value.trim().toLowerCase();
             const pInput = document.getElementById("loginPass").value.trim();
-            const selectedRole = document.getElementById("loginRole").value;
 
-            // First try staffUsers, then fall back to DEFAULT_STAFF_ACCOUNTS to handle stale localStorage
+            // Refresh from local storage to ensure newly added accounts are active
+            loadStaffUsers();
+
             let matchedUser = staffUsers.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
             if (!matchedUser) {
                 matchedUser = DEFAULT_STAFF_ACCOUNTS.find(u => u.username.toLowerCase() === uInput && u.password === pInput);
@@ -685,7 +709,8 @@
 
             currentUser = matchedUser;
             document.getElementById("loginScreen").classList.add("hidden");
-            document.getElementById("activeUserBadge").innerText = `${currentUser.name} (${currentUser.role.toUpperCase()})`;
+            const roleTag = currentUser.role === 'admin' ? 'ADMIN' : 'ATTENDANCE OFFICER';
+            document.getElementById("activeUserBadge").innerText = `${currentUser.name} (${roleTag})`;
 
             // Apply Role-Based Interface Control
             if (currentUser.role === 'staff') {
@@ -720,7 +745,7 @@
             document.getElementById("loginScreen").classList.remove("hidden");
         }
 
-        // STAFF LOGINS MANAGER (ADMIN ONLY)
+        // ATTENDANCE OFFICERS LOGINS MANAGER (ADMIN ONLY)
         function renderStaffTable() {
             const tbody = document.getElementById("staffTableBody");
             if (!tbody) return;
@@ -728,6 +753,9 @@
 
             staffUsers.forEach(u => {
                 const isRootAdmin = u.username === 'admin';
+                const roleBadge = u.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+                const roleLabel = u.role === 'admin' ? 'ADMIN' : 'ATTENDANCE OFFICER';
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition">
                         <td class="p-3 font-bold text-slate-800">${u.name}</td>
@@ -735,7 +763,7 @@
                         <td class="p-3"><span class="px-2 py-1 bg-slate-100 font-bold rounded">${u.assignedTehsil || 'All Tehsils'}</span></td>
                         <td class="p-3 font-mono text-slate-600">${u.password}</td>
                         <td class="p-3 font-bold text-[11px]">
-                            <span class="px-2.5 py-0.5 rounded-full ${u.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'}">${u.role.toUpperCase()}</span>
+                            <span class="px-2.5 py-0.5 rounded-full ${roleBadge}">${roleLabel}</span>
                         </td>
                         <td class="p-3 text-center">
                             ${isRootAdmin ? '<span class="text-slate-400 font-semibold">Master System Admin</span>' : `
@@ -776,13 +804,13 @@
             staffUsers.push({ name, username, password, role: 'staff', assignedTehsil });
             saveStaffUsers();
             closeStaffModal();
-            Swal.fire({ icon: 'success', title: 'Staff Account Created!', text: `Login credentials generated for ${name}.` });
+            Swal.fire({ icon: 'success', title: 'Attendance Officer Account Created!', text: `Login credentials generated for ${name} (User: ${username}). details synced to UserTracker.` });
         }
 
         function deleteStaffUser(username) {
             Swal.fire({
-                title: 'Delete Staff Credentials?',
-                text: `Are you sure you want to remove login access for "${username}"?`,
+                title: 'Delete Credentials?',
+                text: `Are you sure you want to remove access for "${username}"?`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonText: 'Yes, Delete',
@@ -791,7 +819,7 @@
                 if (res.isConfirmed) {
                     staffUsers = staffUsers.filter(u => u.username !== username);
                     saveStaffUsers();
-                    Swal.fire({ icon: 'info', title: 'Deleted', text: 'Staff account removed.' });
+                    Swal.fire({ icon: 'info', title: 'Deleted', text: 'Attendance Officer account removed.' });
                 }
             });
         }
@@ -1412,6 +1440,9 @@
                 return;
             }
 
+            // Sync users to UserTracker sheet
+            pushUsersToCloud();
+
             fetch(url, {
                 method: "POST",
                 mode: "no-cors",
@@ -1428,11 +1459,11 @@
                         batch: e.Training_Batch,
                         status: e.Status,
                         reason: e.Absence_Reason,
-                        markedBy: currentUser ? currentUser.label : 'Trainer'
+                        markedBy: currentUser ? (currentUser.name || currentUser.label) : 'Attendance Officer'
                     }))
                 })
             }).then(() => {
-                Swal.fire({ icon: 'success', title: 'Batch Sync Sent!', text: `${employees.length} records pushed to your Google Sheet.` });
+                Swal.fire({ icon: 'success', title: 'Batch Sync Sent!', text: `${employees.length} attendance records & ${staffUsers.length} user accounts pushed to Google Sheet.` });
             }).catch(err => Swal.fire({ icon: 'error', title: 'Sync Failed', text: err.toString() }));
         }
     </script>
