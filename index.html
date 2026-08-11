@@ -70,11 +70,17 @@
             
             <form id="loginForm" onsubmit="handleLogin(event)" class="p-6 space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Select Role / पद चुनें</label>
-                    <select id="loginRole" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-800 text-sm font-semibold">
-                        <option value="admin">District Nodal Officer (Admin / नोडल अधिकारी)</option>
-                        <option value="staff">Attendance Officer (उपस्थिति अधिकारी)</option>
-                    </select>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Select Role / पद चुनें</label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center p-2.5 bg-slate-50 border border-slate-300 rounded-lg cursor-pointer hover:bg-amber-50 transition border-amber-200">
+                            <input type="radio" name="loginRole" value="admin" class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300">
+                            <span class="ml-2 text-xs font-semibold text-slate-800">District Nodal Officer (Admin)</span>
+                        </label>
+                        <label class="flex items-center p-2.5 bg-slate-50 border border-slate-300 rounded-lg cursor-pointer hover:bg-amber-50 transition border-amber-200">
+                            <input type="radio" name="loginRole" value="staff" checked class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300">
+                            <span class="ml-2 text-xs font-semibold text-slate-800">Attendance Officer</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div>
@@ -814,6 +820,7 @@
             }
 
             renderAllViews();
+            resetInactivityTimer();
             Swal.fire({ icon: 'success', title: 'Welcome!', text: `Logged in as ${currentUser.name}`, timer: 1500, showConfirmButton: false });
         }
 
@@ -824,8 +831,32 @@
             }
         }, 5000);
 
+        // 2-MINUTE INACTIVITY AUTO-LOGOUT ENGINE
+        let inactivityTimer = null;
+        const INACTIVITY_LIMIT_MS = 2 * 60 * 1000; // 2 minutes (120,000 milliseconds)
+
+        function resetInactivityTimer() {
+            if (!currentUser) return;
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+
+            inactivityTimer = setTimeout(() => {
+                if (currentUser) {
+                    handleLogout(true);
+                }
+            }, INACTIVITY_LIMIT_MS);
+        }
+
+        // Listen for user interactions across the entire document
+        ['mousemove', 'mousedown', 'keypress', 'keydown', 'scroll', 'touchstart', 'click'].forEach(evt => {
+            document.addEventListener(evt, () => {
+                if (currentUser) resetInactivityTimer();
+            }, { passive: true });
+        });
+
         function quickLogin(role) {
-            document.getElementById("loginRole").value = role;
+            const roleRadio = document.querySelector(`input[name="loginRole"][value="${role}"]`);
+            if (roleRadio) roleRadio.checked = true;
+
             if (role === 'admin') {
                 document.getElementById("loginUser").value = 'admin';
                 document.getElementById("loginPass").value = 'beawar2026';
@@ -836,9 +867,21 @@
             handleLogin(new Event('submit'));
         }
 
-        function handleLogout() {
+        function handleLogout(isAutoLogout = false) {
             currentUser = null;
+            if (inactivityTimer) {
+                clearTimeout(inactivityTimer);
+                inactivityTimer = null;
+            }
             document.getElementById("loginScreen").classList.remove("hidden");
+            if (isAutoLogout) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Session Expired',
+                    text: 'You have been automatically logged out due to 2 minutes of inactivity.',
+                    confirmButtonColor: '#d97706'
+                });
+            }
         }
 
         // ATTENDANCE OFFICERS LOGINS MANAGER (ADMIN ONLY)
